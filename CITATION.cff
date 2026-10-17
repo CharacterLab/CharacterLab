@@ -4,8 +4,8 @@ title: "Character Lab"
 abstract: "Draw characters in code, and measure how close you got. A local lab that draws 2D characters in code with a WebGL2 renderer and scores each drawing part by part against its reference picture."
 type: software
 authors:
-  - given-names: Daniel
-    family-names: Garcia Acosta
+  - given-names: Dani
+    family-names: Acosta
     alias: coolxeo
 version: 0.1.0
 license: MIT
