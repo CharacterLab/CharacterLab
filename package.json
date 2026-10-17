@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node server.mjs",
     "test": "node lab/scripts/run-tests.mjs",
-    "lab": "node lab/scripts/wc-lab.mjs",
+    "characterlab": "node lab/scripts/wc-lab.mjs",
     "new-pack": "node lab/scripts/new-pack.mjs"
   },
   "dependencies": {

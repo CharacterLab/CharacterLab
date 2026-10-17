@@ -58,6 +58,6 @@ The lab gives no "trace" button on purpose: measure. A few ways that work:
 - Crop the region and look at it closely; read the pixel coordinates of the outline's turning points.
 - A short script (Node with any PNG reader, or Python with Pillow) that prints the colour at given points, or the
   bounding box of all pixels close to a colour.
-- `npm run lab -- sheet --v=<variant> --h=720` for a bigger painting | code | difference image.
+- `npm run characterlab -- sheet --v=<variant> --h=720` for a bigger painting | code | difference image.
 
 Taking coordinates and flat colours from the picture is fine. Putting the picture's pixels into the drawing is not.

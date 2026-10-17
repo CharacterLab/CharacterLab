@@ -84,7 +84,7 @@ test('the rig and the clips: a blink and the waving hand', async () => {
   assert.ok(finiteOps(front.build({ lid: 1 })));
 });
 
-// Scores, measured with the lab's scorer (npm run lab -- score) when Chrome is there: each variant stays above the
+// Scores, measured with the lab's scorer (npm run characterlab -- score) when Chrome is there: each variant stays above the
 // floor set from its measured fidelity (about 3 points under it).
 const FLOOR = {
   'kite-front': 85, 'kite-civilian': 83, 'kite-turn-front': 78, 'kite-turn-3q': 79, 'kite-turn-side': 77, 'kite-turn-back': 80,

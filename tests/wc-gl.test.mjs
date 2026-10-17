@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 // The renderer's extension API (lab/js/wc-gl.js: registerMaterial, registerMode) and the shader it composes.
-// No GPU here: the composed GLSL is checked as text; npm run lab -- score / shot run it for real. How the private
+// No GPU here: the composed GLSL is checked as text; npm run characterlab -- score / shot run it for real. How the private
 // packs' materials splice in is tested in those packs.
 const LAB = new URL('../', import.meta.url);
 const ENGINE = new URL('lab/js/wc-gl.js', LAB);
