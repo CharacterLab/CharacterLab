@@ -9,8 +9,12 @@ names a character.
 
 ## Install and check
 
-Requires Node.js 22.12+ and Google Chrome (or Chromium) for headless scoring. If Chrome isn't found, set
-`CHROME=/path/to/chrome`.
+Requires Node.js 22.12+ and Google Chrome (or Chromium) for headless scoring. Check both first: `node --version`, and
+look for Chrome in its usual place. If Chrome is somewhere else, set `CHROME=/path/to/chrome`. If either is missing,
+tell the user what to install rather than installing system software yourself.
+
+If the user pasted a prompt from the README, it already says what they want: do it, then reply with what you made,
+the scores and the studio link.
 
 ```bash
 npm ci

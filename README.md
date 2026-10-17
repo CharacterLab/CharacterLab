@@ -12,8 +12,51 @@ It ships with one example character, **Captain Kite**, whose code and sheets you
 
 ---
 
+## Fastest way: let your code assistant do it
+
+Open **Claude Code**, **Codex**, **Cursor** or any coding assistant in an empty folder, and paste **one** of these
+prompts. Each one tells the assistant to clone this repository and follow [`AGENTS.md`](AGENTS.md), which has the exact
+steps and checks.
+
+**Install it and show me**
+
+```text
+Clone https://github.com/CharacterLab/CharacterLab.git and cd into it.
+Read AGENTS.md and follow its "Install and check" steps: npm ci, then npm test (it must pass).
+Start the lab with npm start in the background and give me the studio link:
+http://localhost:8765/studio/
+```
+
+**Add my character from a picture**
+
+```text
+Clone https://github.com/CharacterLab/CharacterLab.git and cd into it, then read AGENTS.md.
+Install it (npm ci, npm test).
+Then follow "Add a character" in AGENTS.md for my character, using this picture as the reference sheet:
+/path/to/my-character.png
+Call it "My Character". Scaffold the pack with npm run new-pack, draw the character in code,
+score it with npm run lab -- score, look at npm run lab -- sheet, and keep improving until it reads well.
+When you're done, start the lab and give me the studio link for my character.
+```
+
+**I don't have a picture yet**
+
+```text
+Clone https://github.com/CharacterLab/CharacterLab.git and cd into it, then read AGENTS.md.
+Install it (npm ci, npm test).
+Make a reference sheet for a new character: <describe your character here>.
+Use a flat cel style on a plain light background, front view, full body, 1024x1024.
+Then follow "Add a character" in AGENTS.md to add it to the lab, and give me the studio link.
+```
+
+Replace the path and the name with your own. You need Node.js 22.12+ and Google Chrome on the machine. The assistant
+will check both.
+
+---
+
 ## Contents
 
+0. [Fastest way: let your code assistant do it](#fastest-way-let-your-code-assistant-do-it)
 1. [Quick start](#1-quick-start)
 2. [A tour of the lab](#2-a-tour-of-the-lab)
 3. [Meet Captain Kite](#3-meet-captain-kite)
@@ -45,17 +88,7 @@ npm test                 # the engine's tests and every pack's own tests
 npm run lab -- score     # every variant's score, in headless Chrome
 ```
 
-### With a code assistant
-
-Using Claude Code, Codex or another assistant? Open this folder in it and ask, for example:
-
-> Install Character Lab and add my character from `~/Pictures/hero.png`.
-
-`AGENTS.md` (and `CLAUDE.md`, which points to it) walks the assistant through the whole job: install, scaffold the pack
-with `npm run new-pack`, draw the character in code, score it and iterate. Claude Code also picks up the
-`add-character` skill in `.claude/skills/`.
-
-To scaffold a character yourself:
+To start a character of your own from a picture:
 
 ```bash
 npm run new-pack -- star-girl --sheet=path/to/front.png --box=x,y,w,h --label="Star Girl"
