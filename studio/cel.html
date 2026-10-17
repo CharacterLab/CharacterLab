@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<title>Cel Material Demo</title>
+<style>
+  body { margin: 0; background: #e8e4dc; font: 13px/1.4 system-ui, sans-serif; color: #333; }
+  #shot { display: inline-block; padding: 12px; }
+  canvas { display: block; width: 900px; height: 320px; }
+  p { margin: 0 12px 12px; max-width: 900px; }
+</style>
+</head>
+<body>
+<div id="shot"><canvas id="c" width="900" height="320"></canvas></div>
+<p>The engine's cel material (mat.type 8, js/wc-gl.js), with no pack loaded: a hard shadow tone cut along each shape's
+own outline moved toward the light, a rim light on the lit edge, an even outline. Left to right: clean, light from the
+upper left; clean, light from the right, no rim; not clean (a ragged edge and paper grain), light from above.</p>
+<script src="js/wc-gl.js"></script>
+<script>
+// Ops for three shapes, each drawn three ways; document.title reads READY once drawn (npm run lab -- shot --url=cel.html).
+(function () {
+  const ellipse = (cx, cy, rx, ry, n = 96) => Array.from({ length: n }, (_, i) => {
+    const t = (i / n) * Math.PI * 2;
+    return [cx + rx * Math.cos(t), cy + ry * Math.sin(t)];
+  });
+  // a pear: wider below, as one outline
+  const pear = (cx, cy, k) => Array.from({ length: 120 }, (_, i) => {
+    const t = (i / 120) * Math.PI * 2, s = Math.sin(t);
+    return [cx + k * Math.cos(t) * (0.78 + 0.22 * s), cy + k * 1.1 * s];
+  });
+  const SKIN = ["#c9775f", "#c9775f", "#f4b998", "#fff0e2"], LEAF = ["#3f7a5a", "#3f7a5a", "#7cc49a", "#e4fff0"], SKY = ["#5a6fb4", "#5a6fb4", "#9fb3f0", "#f2f5ff"];
+  const cel = (ramp, o) => Object.assign({ type: 8, ramp, line: "#2f2330", lineW: 2.2, shadow: 16, rim: 4, clean: true }, o);
+  const ops = [];
+  [[150, { light: -0.75 * Math.PI }], [450, { light: 0, rim: 0, shadow: 22 }], [750, { light: -Math.PI / 2, clean: false, fuzz: 0.6 }]].forEach(([x, o], i) => {
+    ops.push({ kind: "halo", pts: ellipse(x, 284, 80, 10), tint: "#b9b0a4", amt: 0.6, mat: { soft: 4, radius: 3 }, seed: 10 + i });
+    ops.push({ kind: "fill", pts: pear(x, 180, 82), mat: cel(SKIN, o), seed: 20 + i });
+    ops.push({ kind: "fill", pts: ellipse(x - 40, 92, 26, 18), mat: cel(LEAF, Object.assign({}, o, { shadow: 8, lineW: 1.8 })), seed: 30 + i });
+    ops.push({ kind: "fill", pts: ellipse(x + 46, 196, 22, 22), mat: cel(SKY, Object.assign({}, o, { shadow: 7, rim: o.rim === 0 ? 0 : 2.5, lineW: 1.8 })), seed: 40 + i });
+  });
+  try {
+    const r = CharacterLab.wcGL.create(document.getElementById("c"));
+    r.render({ ops, world: [900, 320] }, { scale: 1, ox: 0, oy: 0 }, { paper: "#fbf8f2" });
+    document.title = "READY";
+  } catch (e) {
+    document.title = "ERROR " + e.message;
+    console.error(e);
+  }
+})();
+</script>
+</body>
+</html>

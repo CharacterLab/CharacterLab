@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='54' font-size='54'%3E%F0%9F%96%8C%3C/text%3E%3C/svg%3E">
+<title>Character Lab · Bake</title>
+<style>
+  body { margin: 0; background: #d9d4cc; font: 12px/1.3 system-ui, sans-serif; }
+  #row { display: flex; }
+  canvas { display: block; }
+  #out { position: fixed; left: 6px; bottom: 4px; margin: 0; color: #333; background: rgba(255,255,255,.85); padding: 2px 6px; }
+</style>
+</head>
+<body>
+<div id="row"></div>
+<pre id="out">rendering…</pre>
+<script src="js/lab-geom.js"></script>
+<script src="js/wc-gl.js"></script>
+<script src="js/wc-compare.js"></script>
+<script src="js/wc-parts.js"></script>
+<script src="js/wc-rig.js"></script>
+<script src="js/wc-anim.js"></script>
+<script src="js/wc-expressions.js"></script>
+<script src="js/lab-packs.js"></script>
+<script src="js/lab-loader.js"></script>
+<script src="js/wc-elements.js"></script>
+<script>
+// Headless proof stills + scores of a whole figure (a "trace" variant: by default the first one of the default
+// character; ?v=<variant id> another, ?view=side the same as ?v=side).
+//   ?mode=score            -> JSON metrics in #out
+//   ?mode=sheet&h=720      -> reference | ours | difference
+//   &zoom=x,y,w,h          -> the same, for a region of figure space, rendered natively at that size
+//   &p={"lid":0.5}         -> model params
+(async function () {
+  const qs = new URLSearchParams(location.search);
+  const out = document.getElementById("out");
+  try {
+    const params = JSON.parse(qs.get("p") || "{}");
+    const C = CharacterLab.wcCompare, E = CharacterLab.wcElements, all = E.parts.flatMap((p) => p.variants);
+    const vid = qs.get("v") || qs.get("view");
+    const vv = vid ? all.find((v) => v.id === vid) : all.find((v) => v.kind === "trace" && v.build);
+    if (!vv || vv.kind !== "trace" || !vv.build) throw new Error(vid ? `${vid}: not a whole figure with a renderer` : (E.parts.length ? "no traced whole figure (a variant with kind \"trace\") in the packs loaded" : "no character packs found; see packs/README.md"));
+    C.setTrace(E.trace(vv));
+    const img = await C.loadRef();
+    const scene = CharacterLab.wcRig.flatten(E.build(vv, params, null));
+    // score at figure resolution (render 2x, downsample)
+    const FW = C.FW, FH = C.FH, SS = 3;
+    const g = document.createElement("canvas"); g.width = FW * SS; g.height = FH * SS;
+    const R = CharacterLab.wcGL.create(g);
+    R.render(scene, { scale: SS, ox: 0, oy: 0 });
+    const ours = C.figureCanvas((x) => { x.imageSmoothingQuality = "high"; x.drawImage(g, 0, 0, FW, FH); });
+    const ref = C.figureCanvas((x) => C.drawRef(x, img, { scale: 1, ox: 0, oy: 0 }));
+    const sc = C.score(ours, ref);
+    out.textContent = JSON.stringify(sc);
+    document.title = "score " + JSON.stringify({ fidelity: sc.fidelity, landmarks: sc.landmarks, iou: sc.iou, ssim: sc.ssim });
+    if (qs.get("mode") === "score") return;
+    if (qs.has("clean")) out.style.display = "none";
+
+    const H = +(qs.get("h") || 720);
+    const z = (qs.get("zoom") || `0,0,${FW},${FH}`).split(",").map(Number);
+    const k = H / z[3], W = Math.round(z[2] * k);
+    const row = document.getElementById("row");
+    const panel = () => { const c = document.createElement("canvas"); c.width = W; c.height = H; row.appendChild(c); return c; };
+    // reference
+    const pr = panel(), xr = pr.getContext("2d");
+    xr.fillStyle = "#fff"; xr.fillRect(0, 0, W, H);
+    C.drawRef(xr, img, { scale: k, ox: -z[0] * k, oy: -z[1] * k });
+    // ours, rendered natively at this zoom
+    const po = panel();
+    const g2 = document.createElement("canvas"); g2.width = W; g2.height = H;
+    CharacterLab.wcGL.create(g2).render(scene, { scale: k, ox: -z[0] * k, oy: -z[1] * k });
+    po.getContext("2d").drawImage(g2, 0, 0);
+    // difference (figure-res diff, same crop)
+    if (qs.get("diff") !== "0") {
+      const pd = panel(), xd = pd.getContext("2d");
+      const dc = C.diffCanvas(ours, ref, 2.5);
+      xd.imageSmoothingEnabled = false;
+      xd.drawImage(dc, z[0], z[1], z[2], z[3], 0, 0, W, H);
+    }
+  } catch (e) {
+    out.textContent = "ERROR " + e.message;
+    document.title = "ERROR " + e.message;
+    console.error(e);
+  }
+})();
+</script>
+</body>
+</html>

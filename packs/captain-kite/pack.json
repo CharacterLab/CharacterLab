@@ -1,0 +1,17 @@
+{
+  "id": "captain-kite",
+  "label": "Captain Kite",
+  "icon": "icon.svg",
+  "order": 50,
+  "version": "0.1.0",
+  "engine": ">=0.1.0",
+  "license": "CC0-1.0",
+  "private": false,
+  "description": "Captain Kite (Milo Reyes), the Character Lab's open-source example character: a friendly hero in a flat anime cel style, drawn in code with the engine's cel material and measured on his six reference sheets (sheets/, CC0).",
+  "scripts": [
+    "kite-shapes.js",
+    "kite-face.js",
+    "captain-kite.js"
+  ],
+  "sheetsBase": "/packs/captain-kite/sheets/"
+}

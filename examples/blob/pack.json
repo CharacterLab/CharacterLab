@@ -1,0 +1,2 @@
+{ "id": "blob", "label": "Blob", "version": "0.1.0", "engine": ">=0.1.0", "license": "CC0-1.0",
+  "scripts": ["blob.js"], "sheetsBase": "/packs/blob/sheets/" }

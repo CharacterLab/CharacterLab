@@ -1,0 +1,18 @@
+{
+  "name": "character-lab",
+  "version": "0.1.0",
+  "description": "Characters drawn in code with WebGL2 and measured part by part against their reference sheets: a studio, a scorer and a pack format for your own characters.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node studio/scripts/run-tests.mjs",
+    "lab": "node studio/scripts/wc-lab.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^25.13.0"
+  }
+}

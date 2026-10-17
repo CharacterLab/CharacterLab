@@ -1,0 +1,4 @@
+{
+  "packs": ["../my-character-packs"],
+  "mounts": { "/sheets/": "../my-reference-sheets/" }
+}

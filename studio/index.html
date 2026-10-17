@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='54' font-size='54'%3E%F0%9F%96%8C%3C/text%3E%3C/svg%3E">
+<title>Character Lab · studio</title>
+<meta name="description" content="Characters drawn in code with WebGL painted materials, compared part by part with their reference sheets, each part with a small animation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #f4ecdf; --paper-2: #ebe0cc; --card: #fbf7ef;
+    --ink: #2b2118; --ink-2: #6b5a48; --rule: #dccdb4;
+    --accent: #b5654f; --accent-2: #5f7f3a; --key: #6b4128; --on-key: #fbf3e6;
+    --serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --sans: "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --side: 344px;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--paper); }
+  body { margin: 0; color: var(--ink); font: 14px/1.45 var(--sans); -webkit-font-smoothing: antialiased; }
+  .pack-i { display: inline-block; width: 22px; height: 22px; flex: none; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }
+  #crumb-icon { display: inline-flex; }
+  #chars .i { width: 16px; height: 16px; vertical-align: -3px; margin-right: 5px; }
+  svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  button { font: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .app { display: grid; grid-template-columns: minmax(0, 1fr) var(--side); grid-template-rows: auto minmax(0, 1fr); min-height: 100vh; }
+  .app.closed { grid-template-columns: minmax(0, 1fr) 0; }
+  .app.closed .sidebar { display: none; }
+
+  .topbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--rule); background: var(--paper); position: sticky; top: 0; z-index: 5; }
+  .back { font: 700 13px/1 var(--sans); color: var(--accent); text-decoration: none; white-space: nowrap; }
+  .title { min-width: 0; flex: 1; }
+  .eyebrow { font: 700 11px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--accent-2); margin: 0 0 4px; }
+  h1 { font: 600 26px/1 var(--serif); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  h1 span { color: var(--ink-2); font-weight: 400; }
+  .icon-btn { appearance: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--rule); background: var(--card); border-radius: 999px; padding: 8px 12px; cursor: pointer; font: 700 13px/1 var(--sans); }
+  .icon-btn:hover { border-color: var(--ink-2); }
+  .icon-btn[aria-pressed="true"] { background: var(--key); border-color: var(--key); color: var(--on-key); }
+  .icon-btn.round { padding: 8px; }
+
+  .stage { grid-column: 1; padding: 16px 20px 24px; min-width: 0; }
+  .stage-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+  .crumb { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .crumb strong { font: 600 20px/1.1 var(--serif); }
+  .crumb span { color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .crumb .i { width: 26px; height: 26px; color: var(--key); }
+  .stat { font: 600 12px/1 var(--sans); color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .panels { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .panel { margin: 0; }
+  .panel figcaption { display: flex; justify-content: space-between; gap: 8px; font: 700 11px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 8px; }
+  .panel figcaption span:last-child { font-weight: 600; letter-spacing: .04em; text-transform: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .panel canvas { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; max-height: calc(100vh - 170px); object-fit: contain; background: #fff; border-radius: 12px; box-shadow: 0 10px 26px -16px rgba(60,40,20,.5); touch-action: none; }
+  .note { font-size: 13px; color: var(--ink-2); margin: 12px 0 0; min-height: 1.4em; }
+
+  .sidebar { grid-column: 2; grid-row: 2; border-left: 1px solid var(--rule); background: var(--card); position: sticky; top: 59px; height: calc(100vh - 59px); overflow-y: auto; overscroll-behavior: contain; }
+  .sidebar section { padding: 14px 16px; border-bottom: 1px solid var(--rule); }
+  .sidebar h2 { font: 700 11px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 10px; display: flex; justify-content: space-between; }
+  .part-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .tile { appearance: none; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 9px 4px 7px; border: 1px solid var(--rule); border-radius: 10px; background: var(--paper); cursor: pointer; font: 700 11px/1.1 var(--sans); text-align: center; color: var(--ink); }
+  .tile:hover { border-color: var(--ink-2); }
+  .tile[aria-pressed="true"] { background: var(--key); border-color: var(--key); color: var(--on-key); }
+  .tile .i { width: 24px; height: 24px; }
+  .variant-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .thumb { appearance: none; padding: 4px 4px 6px; border: 1px solid var(--rule); border-radius: 10px; background: #fff; cursor: pointer; font: 600 11px/1.15 var(--sans); color: var(--ink); text-align: center; }
+  .thumb canvas { display: block; width: 100%; aspect-ratio: 1; margin-bottom: 4px; }
+  .thumb:hover { border-color: var(--ink-2); }
+  .thumb[aria-pressed="true"] { border-color: var(--key); box-shadow: 0 0 0 2px var(--key); }
+  .thumb.ref-only { opacity: .62; }
+  .mode-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .row { display: grid; grid-template-columns: 70px 1fr 36px; align-items: center; gap: 8px; font-size: 13px; margin: 8px 0 0; }
+  .row output { font: 600 11px/1 var(--sans); color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--key); }
+  .anim-row { display: flex; align-items: center; gap: 10px; }
+  .anim-row p { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chips button { appearance: none; border: 1px solid var(--rule); background: transparent; font: 600 12px/1 var(--sans); border-radius: 999px; padding: 7px 10px; cursor: pointer; }
+  .chips button[aria-pressed="true"] { background: var(--key); border-color: var(--key); color: var(--on-key); }
+  .toggles { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; margin-top: 8px; }
+  .toggles label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  input[type=checkbox] { accent-color: var(--key); width: 16px; height: 16px; }
+  #score { font-size: 12px; }
+  #score .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin-bottom: 8px; }
+  #score .kpis b { font: 600 18px/1 var(--serif); display: block; }
+  #score table { width: 100%; border-collapse: collapse; }
+  #score th, #score td { text-align: right; padding: 2px 4px; font-variant-numeric: tabular-nums; }
+  #score th:first-child { text-align: left; color: var(--ink-2); font-weight: 600; }
+  .muted { color: var(--ink-2); font-size: 12px; margin: 6px 0 0; }
+  .sub-h { font: 700 11px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); margin: 12px 0 6px; }
+
+  @media (max-width: 980px) {
+    .app, .app.closed { grid-template-columns: minmax(0, 1fr); }
+    .sidebar { position: fixed; top: 59px; right: 0; bottom: 0; height: auto; width: min(var(--side), 92vw); z-index: 6; box-shadow: -18px 0 40px -28px rgba(40,25,10,.6); }
+    .app.closed .sidebar { display: none; }
+  }
+  @media (max-width: 640px) {
+    .topbar { padding: 10px 16px; gap: 10px; }
+    .back, .eyebrow, #play span { display: none; }
+    h1 { font-size: 21px; }
+    .stage { padding: 12px 16px 20px; }
+    .panels { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-figure" viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.5"/><path d="M5.5 20.5c.5-4.5 3-7.5 6.5-7.5s6 3 6.5 7.5z"/></symbol>
+    <symbol id="i-head" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="6.5"/><circle cx="6.3" cy="7.3" r="2.4"/><circle cx="17.7" cy="7.3" r="2.4"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.6-6 9.5-6 9.5 6 9.5 6-3.6 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="3.2"/><circle cx="13.2" cy="10.8" r=".8" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-nose" viewBox="0 0 24 24"><path d="M5.5 11.5c0-3 3-5 6.5-5s6.5 2 6.5 5-3 6-6.5 6-6.5-3-6.5-6z"/><circle cx="9.6" cy="13.4" r=".9" fill="currentColor" stroke="none"/><circle cx="14.4" cy="13.4" r=".9" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-mouth" viewBox="0 0 24 24"><path d="M5.6 10c2.2 5.5 10.6 5.5 12.8 0"/><circle cx="5" cy="9.4" r="1.3"/><circle cx="19" cy="9.4" r="1.3"/></symbol>
+    <symbol id="i-cheeks" viewBox="0 0 24 24"><circle cx="7.5" cy="12.5" r="3.6" fill="currentColor" fill-opacity=".22"/><circle cx="16.5" cy="12.5" r="3.6" fill="currentColor" fill-opacity=".22"/></symbol>
+    <symbol id="i-brow" viewBox="0 0 24 24"><path d="M3.5 14.5c3-4.2 8-5.2 11.2-4.1 2.2.8 3.8 2.2 5.3 3.8"/><path d="M5 15.2c3-3 7.5-3.8 10-3"/></symbol>
+    <symbol id="i-clump" viewBox="0 0 24 24"><path d="M12 21c-3.5-5-3.5-10 0-15 3.5 5 3.5 10 0 15z"/><path d="M12 21c-5.5-2-8-6-7.5-11 4 1.5 7 5.5 7.5 11z"/><path d="M12 21c5.5-2 8-6 7.5-11-4 1.5-7 5.5-7.5 11z"/></symbol>
+    <symbol id="i-fringe" viewBox="0 0 24 24"><path d="M12 19c-2-4-2-9 0-13 2 4 2 9 0 13z"/><path d="M12 19c-4-2-6-6-6-10 3 1 5.5 5 6 10z"/><path d="M12 19c4-2 6-6 6-10-3 1-5.5 5-6 10z"/><path d="M12 19c-5 0-8-2-9-5 3-.5 6.5 1.5 9 5z"/><path d="M12 19c5 0 8-2 9-5-3-.5-6.5 1.5-9 5z"/></symbol>
+    <symbol id="i-strip" viewBox="0 0 24 24"><path d="M16 4.5c-3.4 0-6.4 1.6-7.6 4.4 3.4.4 6.4-1.2 7.6-4.4z"/><path d="M15 10.5c-3.4 0-6.4 1.6-7.6 4.4 3.4.4 6.4-1.2 7.6-4.4z"/><path d="M14 16.5c-3.4 0-6.4 1.6-7.6 4.4 3.4.4 6.4-1.2 7.6-4.4z"/></symbol>
+    <symbol id="i-shell" viewBox="0 0 24 24"><path d="M5 20.5v-8a7 7 0 0 1 14 0v8"/><path d="M8.6 20.5v-7.3a3.4 3.4 0 0 1 6.8 0v7.3"/></symbol>
+    <symbol id="i-body" viewBox="0 0 24 24"><circle cx="12" cy="6" r="3.2"/><path d="M7 20.5c-1-3.2-1-7.3 1.6-10h6.8c2.6 2.7 2.6 6.8 1.6 10z"/></symbol>
+    <symbol id="i-arm" viewBox="0 0 24 24"><path d="M6 14.5c0-3 2.7-5 6-5s6 2 6 5-2.7 6-6 6-6-3-6-6z"/><circle cx="7.4" cy="8" r="1.4"/><circle cx="12" cy="5.8" r="1.4"/><circle cx="16.6" cy="8" r="1.4"/></symbol>
+    <symbol id="i-foot" viewBox="0 0 24 24"><path d="M4.5 18.5c0-5 3.3-8.5 7.5-8.5s7.5 3.5 7.5 8.5z"/><path d="M9.5 18.5v-3M14.5 18.5v-3"/></symbol>
+    <symbol id="i-side" viewBox="0 0 24 24"><rect x="2.5" y="5" width="8.5" height="14" rx="1.5"/><rect x="13" y="5" width="8.5" height="14" rx="1.5"/></symbol>
+    <symbol id="i-onion" viewBox="0 0 24 24"><rect x="3" y="3" width="12" height="12" rx="1.5"/><rect x="9" y="9" width="12" height="12" rx="1.5" fill="currentColor" fill-opacity=".2"/></symbol>
+    <symbol id="i-diff" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></symbol>
+    <symbol id="i-wipe" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="1.5"/><path d="M12 2.5v19M8.5 12h-3l1.4-1.4M5.5 12l1.4 1.4M15.5 12h3l-1.4-1.4M18.5 12l-1.4 1.4"/></symbol>
+    <symbol id="i-blink" viewBox="0 0 24 24"><path d="M4.5 10A8 8 0 0 1 18 6.2L20 8"/><path d="M20 3.5V8h-4.5"/><path d="M19.5 14A8 8 0 0 1 6 17.8L4 16"/><path d="M4 20.5V16h4.5"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7.5 4.5v15l11.5-7.5z" fill="currentColor"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4.5" width="4" height="15" rx="1" fill="currentColor"/><rect x="14" y="4.5" width="4" height="15" rx="1" fill="currentColor"/></symbol>
+    <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></symbol>
+  </svg>
+
+  <div class="app" id="app">
+    <header class="topbar">
+      <a class="back" href="../">← Character Lab</a>
+      <div class="title">
+        <p class="eyebrow">Character Lab · studio</p>
+        <h1><span id="char-name">Character</span> <span>· part by part, image vs WebGL</span></h1>
+      </div>
+      <button class="icon-btn" id="play" aria-pressed="false" title="Play the part's animation (space)"><svg class="i"><use href="#i-play"/></svg><span>Animate</span></button>
+      <button class="icon-btn round" id="sidebar-toggle" aria-expanded="true" aria-controls="sidebar" title="Show or hide the controls"><svg class="i"><use href="#i-panel"/></svg></button>
+    </header>
+
+    <main class="stage">
+      <div class="stage-head">
+        <div class="crumb"><span id="crumb-icon"><svg class="i"><use href="#i-figure"/></svg></span><strong id="part-name">–</strong><span id="variant-name"></span></div>
+        <div class="stat" id="stat">–</div>
+      </div>
+      <div class="panels">
+        <figure class="panel"><figcaption><span>Image</span><span id="ref-title"></span></figcaption><canvas id="ref" width="600" height="750" aria-label="Reference image of the selected part"></canvas></figure>
+        <figure class="panel"><figcaption><span>WebGL</span><span id="live-title">live, drawn in code</span></figcaption><canvas id="live" width="600" height="750" aria-label="The selected part drawn in code with WebGL"></canvas></figure>
+      </div>
+      <p class="note" id="note"></p>
+    </main>
+
+    <aside class="sidebar" id="sidebar" aria-label="Lab controls">
+      <section>
+        <h2>Part</h2>
+        <div class="chips" id="chars" aria-label="Character"></div>
+        <div class="part-grid" id="parts"></div>
+      </section>
+      <section>
+        <h2><span>Variant</span><span id="variant-count"></span></h2>
+        <div class="variant-grid" id="variants"></div>
+        <p class="muted">Faded tiles have a reference only: no renderer yet. ← and → step through them.</p>
+      </section>
+      <section>
+        <h2>Compare</h2>
+        <div class="mode-row" id="modes"></div>
+        <div class="row" id="wipe-row"><label for="wipe">Wipe</label><input id="wipe" type="range" min="0" max="1" step="0.01"><output id="v-wipe"></output></div>
+        <div class="row" id="onion-row"><label for="onion">Onion</label><input id="onion" type="range" min="0" max="1" step="0.01"><output id="v-onion"></output></div>
+      </section>
+      <section>
+        <h2>Animation</h2>
+        <div class="anim-row"><button class="icon-btn" id="play2" aria-pressed="false"><svg class="i"><use href="#i-play"/></svg><span>Play</span></button><p id="anim-label"></p></div>
+        <div class="row"><label for="speed">Speed</label><input id="speed" type="range" min="0.25" max="2" step="0.05"><output id="v-speed"></output></div>
+      </section>
+      <section id="clips-box">
+        <h2>Animations</h2>
+        <div class="toggles"><label><input type="checkbox" id="idle"> Idle: blink and breathe</label><label><input type="checkbox" id="clip-loop"> Loop the clip</label><label><input type="checkbox" id="follow"> Eyes follow the pointer</label></div>
+        <div id="clips"></div>
+        <p class="muted" id="clip-now"></p>
+      </section>
+      <section>
+        <h2>Score vs image</h2>
+        <div id="score">–</div>
+      </section>
+      <section id="char-controls">
+        <h2>Character</h2>
+        <div class="chips" id="expr"></div>
+        <div class="row"><label for="lid">Eyelids</label><input id="lid" type="range" min="0" max="1" step="0.01"><output id="v-lid"></output></div>
+        <div class="row"><label for="look">Look</label><input id="look" type="range" min="-1" max="1" step="0.01"><output id="v-look"></output></div>
+        <div class="row"><label for="brow">Brows</label><input id="brow" type="range" min="-1" max="1" step="0.01"><output id="v-brow"></output></div>
+        <div id="face-sliders"></div>
+        <div id="mouth-box"><p class="sub-h">Mouth</p><div class="chips" id="mouths"></div></div>
+        <div id="zoom-box"><p class="sub-h">Zoom</p><div class="chips" id="zooms"></div></div>
+        <div id="layers-box"><p class="sub-h">Layers</p><div class="toggles" id="layers"></div></div>
+      </section>
+    </aside>
+  </div>
+
+  <script src="js/lab-geom.js"></script>
+  <script src="js/wc-gl.js"></script>
+  <script src="js/wc-compare.js"></script>
+  <script src="js/wc-display-score.js"></script>
+  <script src="js/wc-parts.js"></script>
+  <script src="js/wc-rig.js"></script>
+  <script src="js/wc-anim.js"></script>
+  <script src="js/wc-expressions.js"></script>
+  <script src="js/lab-packs.js"></script>
+  <script src="js/lab-loader.js"></script>
+  <script src="js/wc-elements.js"></script>
+  <script src="js/wc-lab.js"></script>
+  <script>CharacterLab.wcLab.init();</script>
+</body>
+</html>

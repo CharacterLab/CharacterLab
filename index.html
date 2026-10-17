@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Character Lab</title>
+<meta name="description" content="Characters drawn in code with WebGL2 and measured part by part against their reference sheets.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='54' font-size='54'%3E%F0%9F%96%8C%3C/text%3E%3C/svg%3E">
+<style>
+  :root { --paper: #f6f2ea; --card: #fffdf8; --ink: #2f2a24; --soft: #6f6558; --line: #e4dccd; --key: #3f5f8a; }
+  @media (prefers-color-scheme: dark) { :root { --paper: #1d1b19; --card: #262320; --ink: #eee7dc; --soft: #b3a897; --line: #3a352f; --key: #9db8e0; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 48px 20px 64px; }
+  h1 { font-size: 2.1rem; line-height: 1.15; margin: 0 0 12px; }
+  .lede { color: var(--soft); font-size: 1.1rem; margin: 0 0 32px; }
+  ul { list-style: none; padding: 0; margin: 0 0 32px; display: grid; gap: 10px; }
+  a.card { display: block; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: inherit; text-decoration: none; }
+  a.card:hover, a.card:focus-visible { border-color: var(--key); }
+  a.card strong { color: var(--key); }
+  a.card span { display: block; color: var(--soft); font-size: .95rem; }
+  code { font: .9em ui-monospace, SFMono-Regular, Menlo, monospace; }
+  p { margin: 0 0 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Character Lab</h1>
+  <p class="lede">Characters drawn in code with WebGL2, no images at render time, and measured part by part against
+    their reference sheets, so every change to a drawing can be scored before it is kept.</p>
+  <ul>
+    <li><a class="card" href="studio/"><strong>Studio</strong><span>Pick a character and a part: its reference sheet
+      beside the live render, compare modes, the score, the face's expressions and the animation clips.</span></a></li>
+    <li><a class="card" href="studio/score.html"><strong>Scores</strong><span>Every variant of every character scored
+      with the studio's metrics, in one table (also <code>npm run lab -- score</code>).</span></a></li>
+    <li><a class="card" href="studio/anim.html"><strong>Filmstrips</strong><span>A clip's frames side by side
+      (<code>?clip=&lt;id&gt;</code>; <code>npm run lab -- film --clip=&lt;id&gt;</code>).</span></a></li>
+    <li><a class="card" href="studio/cel.html"><strong>Cel material</strong><span>The renderer's cel look on its own,
+      with no character pack loaded.</span></a></li>
+  </ul>
+  <p>The characters come as packs: the example character, Captain Kite, is in <code>packs/captain-kite/</code>.
+    <code>packs/README.md</code> explains the pack format and how to load your own from another folder
+    (<code>lab.config.json</code>).</p>
+</main>
+</body>
+</html>

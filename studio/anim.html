@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='54' font-size='54'%3E%F0%9F%96%8C%3C/text%3E%3C/svg%3E">
+<title>Character Lab · filmstrips</title>
+<style>
+  body { margin: 0; background: #efe9de; color: #2b2118; font: 13px/1.35 system-ui, sans-serif; }
+  #shot { display: block; }
+  #out { white-space: pre-wrap; font: 11px ui-monospace, monospace; margin: 6px; }
+</style>
+</head>
+<body>
+<canvas id="shot" width="10" height="10"></canvas>
+<pre id="out">drawing…</pre>
+<script src="js/lab-geom.js"></script>
+<script src="js/wc-gl.js"></script>
+<script src="js/wc-compare.js"></script>
+<script src="js/wc-parts.js"></script>
+<script src="js/wc-rig.js"></script>
+<script src="js/wc-anim.js"></script>
+<script src="js/wc-expressions.js"></script>
+<script src="js/lab-packs.js"></script>
+<script src="js/lab-loader.js"></script>
+<script src="js/wc-elements.js"></script>
+<script>
+// Animation clips as filmstrips: frames of a clip side by side, drawn exactly (every part moved by its matrix:
+// CharacterLab.wcRig.flatten), or through the studio's layered renderer (&rig=1) to compare the two.
+//   anim.html?clip=nod                 one clip, 8 frames across its length (a loop: across one cycle)
+//   anim.html?group=eyes               every clip of a group, one row each (&frames=6)
+//   &frames=8 &h=260                   frames per clip, frame height in pixels
+//   &zoom=x,y,w,h                      a box of the figure (model units); default the whole figure; or a name the
+//                                      character's pack gives (studio.filmZooms, e.g. zoom=face, zoom=head)
+//   &v=<variant id>                    the variant (a whole figure, a standing figure, an expression head: anything
+//                                      rigged); default the first rigged view of the default character
+//   &p={"mouth":"cat"}                 base face params under the clip
+//   &fps=24                            frames at this rate across the clip (instead of &frames), for videos
+//   &cols=8 &labels=0                  frames wrapped into rows of 8, without the labels (a clean grid to cut up)
+//   &idle=1                            the studio's idle layer (blinks, breath) under the clip
+(async function () {
+  const CharacterLab = window.CharacterLab, E = CharacterLab.wcElements, A = CharacterLab.wcAnim, R = CharacterLab.wcRig;
+  const qs = new URLSearchParams(location.search), out = document.getElementById("out");
+  try {
+    const rigged = (v) => { if (!v.build) return false; const s = v.build({}); return !!(s && s.rig && s.rig.def); };
+    const all = E.parts.flatMap((p) => p.variants);
+    const vv = qs.get("v") ? all.find((v) => v.id === qs.get("v")) : E.parts.filter((p) => p.whole).flatMap((p) => p.variants).find(rigged);
+    const own = CharacterLab.lab.character(vv ? E.part(vv.part).character : null), ZOOM = Object.assign({ full: null }, own && own.studio && own.studio.filmZooms);
+    if (!E.parts.length) throw new Error("no character packs found; see packs/README.md");
+    if (!vv || !vv.build) throw new Error(qs.get("v") ? "no such variant: " + qs.get("v") : "no rigged whole figure to film");
+    const base = JSON.parse(qs.get("p") || "{}");
+    const clipIds = qs.get("clip") ? qs.get("clip").split(",") : A.list(qs.get("group")).map((c) => c.id);
+    if (!clipIds.length) throw new Error("no clips");
+    const fps = +(qs.get("fps") || 0), H = +(qs.get("h") || 260), useRig = qs.get("rig") === "1", idle = qs.get("idle") === "1";
+    const labels = qs.get("labels") !== "0", cols0 = +(qs.get("cols") || 0);
+    const frameCount = (c) => (fps ? Math.max(2, Math.round(c.dur * fps) + (c.loop ? 0 : 1)) : Math.max(2, +(qs.get("frames") || 8)));
+    const N = Math.max(...clipIds.map((id) => (A.clips[id] ? frameCount(A.clips[id]) : 2)));
+    const zq = qs.get("zoom"), world = vv.kind === "trace" ? [vv.frame[2], vv.frame[3]] : [vv.frame[2] * (vv.scale || 1), vv.frame[3] * (vv.scale || 1)];
+    // a mapped variant (an expression head) draws the model through its fit; the standing figures fit to their sheet's
+    // pixels, which this page does not load
+    if (vv.kind === "mapped" && !(vv.fit && typeof vv.fit === "object")) throw new Error(vv.id + ": its fit needs the sheet; use the front or an expression head");
+    const fit = vv.kind === "mapped" ? vv.fit : null;
+    const z = zq ? (ZOOM[zq] !== undefined ? ZOOM[zq] : zq.split(",").map(Number)) : null;
+    const box = z || [0, 0, world[0], world[1]];
+    const k = H / box[3], W = Math.round(box[2] * k), labelH = labels ? 18 : 0, gap = labels ? 4 : 0, left = labels ? 140 : 0;
+    const cols = cols0 || N, rowsPer = Math.ceil(N / cols);
+    const shot = document.getElementById("shot");
+    shot.width = cols * W + (cols + 1) * gap + left; shot.height = clipIds.length * rowsPer * (H + labelH + gap) + gap;
+    const x = shot.getContext("2d");
+    x.fillStyle = "#efe9de"; x.fillRect(0, 0, shot.width, shot.height);
+    const g = document.createElement("canvas"); g.width = W; g.height = H;
+    const gr = CharacterLab.wcGL.create(g);
+    const view = fit ? { scale: k * fit.s, ox: (fit.tx - box[0]) * k, oy: (fit.ty - box[1]) * k } : { scale: k, ox: -box[0] * k, oy: -box[1] * k };
+    const lines = [];
+    clipIds.forEach((id, row) => {
+      const c = A.clips[id];
+      if (!c) throw new Error("no such clip: " + id);
+      const yRow = gap + row * rowsPer * (H + labelH + gap), n = frameCount(c);
+      if (labels) {
+        x.fillStyle = "#2b2118"; x.font = "600 13px system-ui"; x.fillText(c.label, 6, yRow + 14);
+        x.font = "11px system-ui"; x.fillStyle = "#6b5a48"; x.fillText(`${id} · ${c.group} · ${c.dur}s${c.loop ? " loop" : ""}`, 6, yRow + 30);
+      }
+      for (let i = 0; i < n; i++) {
+        const t = fps ? i / fps : c.loop ? (c.dur * i) / n : (c.dur * i) / (n - 1);
+        const m = A.mix(idle ? A.idle(t, { blink: !c.usesLids }) : null, A.sample(c, t)), p = Object.assign({}, base, m.p, { pose: m.pose });
+        const scene = vv.build(p);
+        if (useRig) gr.renderRig(R.layers(scene), view, scene.world);
+        else gr.render(R.flatten(scene), view);
+        const px = left + gap + (i % cols) * (W + gap), y0 = yRow + Math.floor(i / cols) * (H + labelH + gap);
+        x.drawImage(g, px, y0 + labelH);
+        if (labels) { x.fillStyle = "#6b5a48"; x.font = "11px system-ui"; x.fillText(`${t.toFixed(2)}s`, px + 2, y0 + 13); }
+      }
+      lines.push(`${id}: ${n} frames, ${W} x ${H}, ${cols} per row`);
+    });
+    out.textContent = lines.join("\n");
+    document.title = "READY";
+  } catch (e) {
+    out.textContent = "ERROR " + e.message; document.title = "ERROR " + e.message; console.error(e);
+  }
+})();
+</script>
+</body>
+</html>
