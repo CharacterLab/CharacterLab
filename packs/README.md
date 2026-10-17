@@ -19,7 +19,9 @@ here too, or in a folder of their own outside the lab (a private repository, say
 2. the folders listed in `../lab.config.json` (optional), relative to the lab:
    `{ "packs": ["../my-character-packs"], "mounts": { "/sheets/": "../sheets/" } }` (see `../lab.config.example.json`)
    (`mounts`: other folders served read-only, e.g. where a pack's reference sheets live);
-3. the folders in `LAB_PACKS` (colon-separated), e.g. `LAB_PACKS=~/my-packs npm start`.
+3. the folders in `LAB_PACKS` (colon-separated), e.g. `LAB_PACKS=~/my-packs npm start`;
+4. the folder new packs are made in, if it is not one of those: `"newPacksDir"` in `../lab.config.json`, or
+   `LAB_NEW_PACKS` (the lab's New character page and `POST /api/characters` make packs there; default: this folder).
 
 Each subfolder with a `pack.json` is a pack. The server lists them at `GET /packs.json` and serves each one read-only at
 `/packs/<id>/` (browser assets only; its `tests/`, `scripts/` and package files stay private). Every page loads them
@@ -31,7 +33,7 @@ log. With no packs at all the lab says "No character packs found".
 
 ```
 <id>/
-  pack.json      { id, label, order, kind, requires, icon, icons, version, engine, license, private, description,
+  pack.json      { id, label, order, kind, requires, icon, icons, thumb, version, engine, license, private, description,
                    scripts: [...], sheetsBase }
   <id>.js        the character's code; the last script ends with one CharacterLab.lab.registerCharacter({...}) call
   tests/         its own tests, run by `npm test` with the engine's (at least: checkPack)
@@ -54,6 +56,8 @@ CharacterLab.lab.registerCharacter({
 ```
 
 - `pack.json`'s `id` is its folder's name; `scripts` are `.js` paths inside the pack, loaded in that order.
+- `thumb`: the picture on the character's card on the home page (a `.png`, `.jpg` or `.webp` path inside the pack);
+  without one, `sheets/front.png`, else the first picture in `sheets/`.
 - Icons: the lab ships neutral icons only (head, eye, nose, mouth, body, …, and `figure`, the default). A pack may
   ship its own SVGs (single-colour, drawn in black; the lab tints them): `"icon": "icon.svg"` for the character
   (its button, and any of its parts whose icon the lab does not have), `"icons": { "wing": "icons/wing.svg" }`
@@ -79,6 +83,9 @@ other scripts and before anything creates a renderer, so they are all registered
 - `checkPack` checks a materials pack too: its extensions register and compose, and it registers no character.
 
 ## Adding a pack
+
+The quickest start is the lab's New character page (`/lab/new.html`) or `npm run new-pack` (`../AGENTS.md`), which
+make all of this from one or more pictures. By hand:
 
 1. Make `<id>/` in a pack folder (this one, or one named in `lab.config.json`) with `pack.json` and its scripts.
 2. Add `tests/pack.test.mjs`: `checkPack(dir)` from `../lab/scripts/lab-vm.mjs` checks the manifest, the scripts

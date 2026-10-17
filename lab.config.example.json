@@ -1,4 +1,5 @@
 {
   "packs": ["../my-character-packs"],
-  "mounts": { "/sheets/": "../my-reference-sheets/" }
+  "mounts": { "/sheets/": "../my-reference-sheets/" },
+  "newPacksDir": "../my-character-packs"
 }

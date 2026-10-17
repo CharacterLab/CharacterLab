@@ -35,18 +35,20 @@ You need a PNG of the character on a plain, flat background, ideally square (102
 body, with nothing cropped. If the user hasn't got one:
 - Ask them for one, or generate one with an image tool you have.
 - The flat style matches the built-in cel material best: flat colours, one hard shadow, clean outlines.
-- Find the figure's box on the sheet (`x,y,w,h` in pixels, a few pixels of margin). Measure it: crop and look, or
-  scan for pixels that differ from the background colour.
+- The figure's box on the sheet (`x,y,w,h` in pixels) is found for you from the pixels that differ from the background
+  colour. Check it in the output of the next step, and pass `--box` if it is wrong.
 
 ### 2. Scaffold the pack
 
 ```bash
-npm run new-pack -- <id> --sheet=<path/to/front.png> --box=x,y,w,h --label="Display Name"
+npm run new-pack -- <id> --sheet=<path/to/front.png> --label="Display Name"   # [--box=x,y,w,h] [--sheet=<more.png> …]
 ```
 
-- `<id>`: lowercase letters, digits and dashes (`star-girl`).
-- This makes `packs/<id>/`: `pack.json`, `<id>.js` (one whole-figure variant with a placeholder ellipse),
-  `sheets/front.png` and `tests/pack.test.mjs`.
+- `<id>`: lowercase letters, digits and single dashes, starting with a letter (`star-girl`).
+- This makes `packs/<id>/`: `pack.json`, `<id>.js` (one whole-figure variant with a placeholder ellipse per sheet),
+  `sheets/front.png` and `tests/pack.test.mjs`. A repeated `--sheet` adds another view as another variant.
+- People can do the same in the browser: the lab's New character page (`/lab/new.html`, also on the home page) posts
+  the pictures to `POST /api/characters` (`lab-api.mjs`), which uses the same pack maker (`lab/scripts/pack-maker.mjs`).
 - `--dir=<folder>` puts the pack outside the repo (for a private character). The lab then needs `LAB_PACKS=<folder>`
   or a `lab.config.json`; see step 6.
 
@@ -122,9 +124,10 @@ run with `npm test` the same way.
 
 | Path | What |
 |------|------|
-| `lab/` | the engine: pages, `js/` (renderer `wc-gl.js`, pack API `lab-packs.js`, loader), `scripts/` (CLI `wc-lab.mjs`, `new-pack.mjs`) |
+| `lab/` | the engine: pages, `js/` (renderer `wc-gl.js`, pack API `lab-packs.js`, loader), `scripts/` (CLI `wc-lab.mjs`, `new-pack.mjs`, pack maker `pack-maker.mjs`) |
 | `packs/` | packs that ship with the lab; `packs/README.md` is the pack format |
 | `packs/captain-kite/` | the full example: several sheets, parts, expressions, poses, rig, clips |
 | `examples/blob/` | the smallest working pack (the README's guide) |
 | `server.mjs`, `lab-config.mjs` | local server and pack discovery (`packs/`, `lab.config.json`, `LAB_PACKS`) |
+| `lab-api.mjs`, `lab/new.html` | the New character page and its `POST /api/characters` (new packs: `packs/`, or `newPacksDir`) |
 | `tests/` | engine tests; each pack has its own `tests/` |

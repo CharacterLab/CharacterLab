@@ -81,17 +81,20 @@ npm ci
 npm start          # open http://localhost:8765/
 ```
 
-Then open the lab at <http://localhost:8765/lab/>. To check everything works:
+The home page offers two ways in: **Create a new character** from your own pictures, or **Try the sample**, Captain
+Kite, in the lab at <http://localhost:8765/lab/>. To check everything works:
 
 ```bash
 npm test                 # the engine's tests and every pack's own tests
 npm run lab -- score     # every variant's score, in headless Chrome
 ```
 
-To start a character of your own from a picture:
+To start a character of your own from a picture, use the lab's **New character** page
+(<http://localhost:8765/lab/new.html>): name it, drop in one or more pictures (the first is the front), check the
+crop the lab found, and press Create. The same from the command line:
 
 ```bash
-npm run new-pack -- star-girl --sheet=path/to/front.png --box=x,y,w,h --label="Star Girl"
+npm run new-pack -- star-girl --sheet=path/to/front.png --label="Star Girl"   # --box=x,y,w,h to set the crop yourself
 ```
 
 ---
@@ -172,8 +175,9 @@ This walks through `examples/blob/`, the smallest character that works: one shee
 
 ### Step 1: Make a reference sheet
 
-Paint, draw or generate a picture of your character on a plain background and save it as a PNG. Note the box
-(`x, y, width, height` in pixels) around the figure: that's the crop the lab scores.
+Paint, draw or generate a picture of your character on a plain background and save it as a PNG. The box
+(`x, y, width, height` in pixels) around the figure is the crop the lab scores; the New character page and
+`npm run new-pack` find it for you, and you can set it by hand.
 
 ```
 examples/blob/
@@ -276,9 +280,11 @@ cp lab.config.example.json lab.config.json
 
 - `packs`: folders of packs, relative to the lab. `LAB_PACKS` (colon-separated) adds more.
 - `mounts`: other folders served read-only on the same port, if a pack's sheets live elsewhere.
+- `newPacksDir`: where the New character page makes packs (default: the lab's own `packs/`; `LAB_NEW_PACKS` too).
 
 The server lists every pack at `/packs.json`, serves each one read-only at `/packs/<id>/` (its `tests/` and `tools/`
-stay private), and the pages load them in their `order`. With no packs at all, the lab opens with a short message
+stay private), and the pages load them in their `order`. Its one write is `POST /api/characters`, which the New
+character page uses to make a pack; it answers only the lab's own page. With no packs at all, the lab opens with a short message
 saying so.
 
 ---
@@ -308,7 +314,7 @@ other packs then `"requires"` it to share one look. The API is documented at the
 |---------|--------------|
 | `npm run lab -- score` | every variant's score (`--part=`, `--v=`, `--save=`, `--compare=`, `--json`) |
 | `npm run lab -- sheet --v=<id>` | painting \| code \| difference image for one variant |
-| `npm run lab -- shot --url=<page>` | screenshot of a lab page once it's ready |
+| `npm run lab -- shot --url=<page>` | screenshot of a lab page once it's ready (`--url=/` the home page, `--full`) |
 | `npm run lab -- film --clip=<id>` | a clip's frames as a filmstrip (`--frames`, `--zoom`, `--fps`) |
 | `npm run lab -- board` / `check` / `packages` | group scores by family, guard a change, split work into packages |
 
@@ -319,14 +325,16 @@ The header of `lab/scripts/wc-lab.mjs` lists every option. Output goes to `out/`
 ## 8. Folder map
 
 ```
-index.html            home page
-server.mjs            local server (loopback only, read-only, browser assets only)
+index.html            home page: create a character, try the sample, every character found
+server.mjs            local server (loopback only, browser assets only; its one write is lab-api.mjs)
+lab-api.mjs           POST /api/characters: the New character page makes a pack
 lab-config.mjs        finds packs and mounts (lab.config.json, LAB_PACKS)
 lab/                  the engine
   index.html          the lab               score.html   scores      anim.html   clips
-  cel.html            the cel material      inspect.html, bake.html  tools for figures scored with landmarks
+  new.html            a new character       cel.html     the cel material
+  inspect.html, bake.html                   tools for figures scored with landmarks
   js/                 renderer, catalog, scoring, rig and clips, face params, pack API and loader
-  scripts/            command line, test runner
+  scripts/            command line, pack maker (pack-maker.mjs, png.mjs), test runner
 packs/                the lab's own packs: captain-kite/ and the pack format (README.md)
 examples/blob/        the guide's tutorial character
 docs/images/          the pictures in this README
