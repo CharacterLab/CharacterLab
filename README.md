@@ -10,6 +10,16 @@ sheet, side by side, with a score, so you can tell whether a change to the drawi
 
 It ships with one example character, **Captain Kite**, whose code and sheets you're free to use.
 
+## Use it from your agent
+
+Install it as a plugin, then just ask, for example *"Add my character from this picture and show me the lab."* The
+plugin brings the lab's skills and its tools (an MCP server); your agent installs and starts the lab and gives you
+the link.
+
+- **Claude Code:** `/plugin marketplace add CharacterLab/CharacterLab`, then `/plugin install character-lab@character-lab`
+- **Codex:** `codex plugin marketplace add CharacterLab/CharacterLab`, then `codex plugin add character-lab@character-lab`
+- **Any other agent:** paste one of the prompts below.
+
 ---
 
 ## Fastest way: let your code assistant do it

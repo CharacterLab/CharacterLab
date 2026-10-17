@@ -1,130 +1,75 @@
-# Instructions for code assistants
+# Instructions for AI agents
 
-This file is for AI code assistants (Claude Code, Codex, Cursor, …) working in this repository. `CLAUDE.md` points
-here. People can read `README.md` instead.
+This file is for AI agents (Claude Code, Codex, Cursor, …) working with Character Lab. `CLAUDE.md` points here.
+People can read `README.md` instead.
 
-Character Lab draws characters in code (WebGL2) and scores each drawing against a reference picture. A character is a
-**pack**: a folder with `pack.json`, its scripts and its reference sheets. The engine lives in `studio/` and never
-names a character.
+Character Lab draws characters in code (WebGL2) and scores each drawing against its reference picture. A character is
+a **pack**: a folder with `pack.json`, its scripts and its pictures. The engine is `lab/` and never names a character.
+The product is called **the lab**.
+
+The user should never have to type a command: you run them, and you give the user a link to look at. Talk to them in
+plain words.
+
+## Skills: read the one that fits
+
+The how-to lives in [Agent Skills](https://agentskills.io) under `skills/`. As a plugin (Claude Code, Codex) they load
+by themselves; otherwise open the `SKILL.md` that fits the request and follow it.
+
+| The user wants to | Read |
+|-------------------|------|
+| try the lab, install it, see it, know what it does | [`skills/character-lab/SKILL.md`](skills/character-lab/SKILL.md) |
+| add a character from a picture or a description | [`skills/create-character/SKILL.md`](skills/create-character/SKILL.md) |
+| make a drawing match its picture better | [`skills/draw-character/SKILL.md`](skills/draw-character/SKILL.md) |
+| expressions, a rig, animation clips, filmstrips | [`skills/animate-character/SKILL.md`](skills/animate-character/SKILL.md) |
+| pack files, `pack.json`, private characters | [`skills/pack-format/SKILL.md`](skills/pack-format/SKILL.md) |
+
+If the user pasted a prompt from the README, it already says what they want: do it, then reply with what you made, the
+score and the link.
+
+## Tools (MCP)
+
+`mcp/server.mjs` is an MCP server (stdio, no dependencies) with `lab_start`, `lab_status`, `list_characters`,
+`create_character`, `score`, `compare` and `film`. The plugins start it for you; any other MCP client can run
+`node mcp/server.mjs`. Everything it does is also a command in the lab's folder, below.
 
 ## Install and check
 
-Requires Node.js 22.12+ and Google Chrome (or Chromium) for headless scoring. Check both first: `node --version`, and
-look for Chrome in its usual place. If Chrome is somewhere else, set `CHROME=/path/to/chrome`. If either is missing,
-tell the user what to install rather than installing system software yourself.
-
-If the user pasted a prompt from the README, it already says what they want: do it, then reply with what you made,
-the scores and the studio link.
+Requires Node.js 22.12+ and Google Chrome or Chromium (for scoring; `CHROME=/path/to/chrome` if it is elsewhere). Check
+both; if one is missing, tell the user what to install rather than installing system software yourself.
 
 ```bash
 npm ci
 npm test                    # must pass before and after your change
-npm run lab -- score        # every variant's score (headless Chrome); Captain Kite's mean is about 82.7
-npm start                   # http://localhost:8765/studio/ for the user to look at
+npm run lab -- score        # every variant's score; Captain Kite's mean is about 82.7
+npm start                   # in the background; give the user http://localhost:8765/lab/
 ```
 
-`npm start` runs a server: start it in the background and give the user the URL.
-
-## Add a character (the usual request)
-
-Follow these steps in order. Each step ends with a command that shows whether it worked.
-
-### 1. Get a reference sheet
-
-You need a PNG of the character on a plain, flat background, ideally square (1024×1024 works well), front view, full
-body, with nothing cropped. If the user hasn't got one:
-- Ask them for one, or generate one with an image tool you have.
-- The flat style matches the built-in cel material best: flat colours, one hard shadow, clean outlines.
-- Find the figure's box on the sheet (`x,y,w,h` in pixels, a few pixels of margin). Measure it: crop and look, or
-  scan for pixels that differ from the background colour.
-
-### 2. Scaffold the pack
-
-```bash
-npm run new-pack -- <id> --sheet=<path/to/front.png> --box=x,y,w,h --label="Display Name"
-```
-
-- `<id>`: lowercase letters, digits and dashes (`star-girl`).
-- This makes `packs/<id>/`: `pack.json`, `<id>.js` (one whole-figure variant with a placeholder ellipse),
-  `sheets/front.png` and `tests/pack.test.mjs`.
-- `--dir=<folder>` puts the pack outside the repo (for a private character). The lab then needs `LAB_PACKS=<folder>`
-  or a `lab.config.json`; see step 6.
-
-Check it worked: `npm test` passes, and `npm run lab -- score --part=<id>` prints one score (low: it's a placeholder).
-
-### 3. Draw the character in code
-
-Edit `packs/<id>/<id>.js`. `build(p)` returns `{ world, ops }`: draw ops in the sheet's own pixels, back to front.
-
-- **Shapes:** `{ kind: "fill", pts, mat, seed }`. `pts` is a closed list of `[x, y]`. Make them with
-  `CharacterLab.lab.geom.ellipse(cx, cy, rx, ry, rot)` or `spline(points, true)` through points you measured on the sheet.
-- **Material:** the cel material, `{ type: 8, ramp: [shadow, shadow, base, base], line, lineW, shadow, clean: true }`.
-  Other op kinds and materials (`eye`, `blush`, `halo`, strokes, the painted wash) are documented at the top of
-  `studio/js/wc-gl.js`.
-- **Order:** backdrop first, then body, limbs, head, hair, then face details last.
-- **Measuring:** take every coordinate and colour from the sheet. Sample colours from flat regions; never guess them.
-
-Work part by part: silhouette first, then big colour regions, then the face.
-
-### 4. Measure, look, repeat
-
-```bash
-npm run lab -- score --part=<id> --save=out/<id>-base.json      # baseline
-# …change the drawing…
-npm run lab -- score --part=<id> --compare=out/<id>-base.json   # did it improve?
-npm run lab -- sheet --v=<id>-front --out=out/<id>.png          # painting | code | difference
-```
-
-Open the `sheet` image after each change: the difference panel is white where the drawing matches, coloured where it
-misses. Fix the biggest coloured areas first.
-
-As a rough guide, about 80 or more is a good whole figure (Captain Kite's front is 88). Stop when the user is happy, not
-at a number.
-
-### 5. Add more (only if asked)
-
-- **More views:** add another sheet to `sheets` and another variant with its own `frame` crop. Use one variant per
-  expression or pose.
-- **Expressions:** read params in `build(p)`, e.g. `p.eyes === "closed"`, `p.mouth === "open"`. Add an `expressions`
-  block so the studio shows buttons and sliders.
-- **Animation:** add `rig` (the parts a clip may move) and `clips`, then preview with
-  `npm run lab -- film --clip=<clip-id>`.
-
-`packs/captain-kite/` does all of these; copy its patterns. `packs/README.md` documents every field of `pack.json` and
-`registerCharacter`.
-
-### 6. A character kept outside this repo
-
-For a private character, create it with `--dir=../my-characters`, then either:
-
-```bash
-LAB_PACKS=../my-characters npm start
-```
-
-or copy `lab.config.example.json` to `lab.config.json` (git-ignored) and list the folder under `packs`. Its pack tests
-run with `npm test` the same way.
+Other commands: `npm run new-pack` (start a character), `npm run lab -- sheet --v=<variant>` (painting | code |
+difference), `npm run lab -- film --clip=<id>` (filmstrip). The header of `lab/scripts/wc-lab.mjs` lists every option.
 
 ## Rules
 
-- **The engine stays generic.** Don't put character-specific code, names or colours in `studio/`. Everything about a
-  character goes in its pack. A look a pack needs that the engine lacks is a renderer extension (`*-gl.js`, see
-  `packs/README.md`), not an engine edit.
-- **Draw, don't copy.** Never draw the reference image itself, or pixels or textures sampled from it, to raise a
-  score. The score must measure code against the painting. Measuring positions, outlines and flat colours on the sheet
-  is fine.
+- **Draw, don't copy.** Never draw the reference picture itself, or pixels or textures sampled from it, to raise a
+  score. Measuring positions, outlines and flat colours on it is fine.
+- **The engine stays generic.** No character-specific code, names or colours in `lab/`. A look a pack needs that the
+  engine lacks is a renderer extension (`*-gl.js`), not an engine edit.
 - **Keep ids prefixed.** Variant ids and sheet keys start with the pack id (`star-girl-front`).
-- **Pass the checks.** `npm test` must pass and other packs' scores must not change: compare with a baseline saved
-  before your change.
-- **Mind the license.** A pack carries its own `license` in `pack.json`. Only add sheets the user has the rights to.
+- **Pass the checks.** `npm test` passes, and other characters' scores don't drop (compare with a baseline saved
+  before your change: `npm run lab -- score --save=out/base.json`, then `--compare=out/base.json`).
+- **Mind the license.** A pack carries its own `license`. Only add pictures the user has the rights to; keep private
+  characters outside this repository (`lab.config.json` or `LAB_PACKS`).
 - **Never commit** `out/`, `node_modules/` or `lab.config.json`.
 
 ## Where things are
 
 | Path | What |
 |------|------|
-| `studio/` | the engine: pages, `js/` (renderer `wc-gl.js`, pack API `lab-packs.js`, loader), `scripts/` (CLI `wc-lab.mjs`, `new-pack.mjs`) |
+| `lab/` | the engine: pages, `js/` (renderer `wc-gl.js`, pack API `lab-packs.js`, loader), `scripts/` (CLI `wc-lab.mjs`, pack maker) |
 | `packs/` | packs that ship with the lab; `packs/README.md` is the pack format |
 | `packs/captain-kite/` | the full example: several sheets, parts, expressions, poses, rig, clips |
-| `examples/blob/` | the smallest working pack (the README's guide) |
+| `examples/blob/` | the smallest working pack |
+| `skills/` | the Agent Skills |
+| `mcp/` | the MCP server (`server.mjs`; tools in `tools.mjs`, the lab's server and CLI in `lab.mjs`) |
+| `plugin.json`, `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/`, `.mcp.json`, `mcp.json` | the plugin manifests |
 | `server.mjs`, `lab-config.mjs` | local server and pack discovery (`packs/`, `lab.config.json`, `LAB_PACKS`) |
-| `tests/` | engine tests; each pack has its own `tests/` |
+| `tests/` | engine, server, MCP and manifest tests; each pack has its own `tests/` |
