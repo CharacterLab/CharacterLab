@@ -1,0 +1,39 @@
+{
+  "name": "character-lab",
+  "version": "0.1.0",
+  "description": "Draw characters in code from your pictures, score each drawing against its picture, and animate them: skills and an MCP server for Character Lab.",
+  "author": {
+    "name": "Character Lab"
+  },
+  "homepage": "https://github.com/CharacterLab/CharacterLab",
+  "repository": "https://github.com/CharacterLab/CharacterLab",
+  "license": "MIT",
+  "keywords": [
+    "character",
+    "drawing",
+    "webgl",
+    "animation",
+    "reference-sheet",
+    "scoring",
+    "mcp",
+    "skills"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Character Lab",
+    "shortDescription": "Turn a picture of a character into a drawing in code, scored and animated",
+    "longDescription": "Character Lab draws characters in code (WebGL2) and scores every drawing against its reference picture, part by part. Give it a picture of your character, or describe one, and your agent makes the character pack, improves the drawing until it matches, adds expressions and animation clips, and opens the lab in your browser so you can see the picture and the code drawing side by side.",
+    "developerName": "Character Lab",
+    "category": "Design",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/CharacterLab/CharacterLab",
+    "defaultPrompt": [
+      "Use Character Lab to turn this picture of my character into a drawing in code, and show me the lab.",
+      "Use Character Lab to make my character wave, and show me the filmstrip."
+    ]
+  }
+}
