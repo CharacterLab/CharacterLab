@@ -84,7 +84,7 @@ test('the rig and the clips: a blink and the waving hand', async () => {
   assert.ok(finiteOps(front.build({ lid: 1 })));
 });
 
-// Scores, measured with the lab's scorer (npm run lab -- score) when Chrome is there: each variant stays above the
+// Scores, measured with the lab's scorer (npm run characterlab -- score) when Chrome is there: each variant stays above the
 // floor set from its measured fidelity (about 3 points under it). The floors were measured on macOS, where the
 // command line then rendered with Metal; it now renders with SwiftShader on every machine (GL_ARGS in
 // lab/scripts/wc-lab.mjs), so the test gives the same scores everywhere. The same drawing scores a little lower on

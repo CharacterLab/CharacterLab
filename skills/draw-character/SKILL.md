@@ -11,8 +11,8 @@ The drawing is the `build(p)` function in the pack's main script (`<pack>/<id>.j
 
 ## The loop
 
-1. **Baseline.** Score it (`score` tool with the character, or `npm run lab -- score --part=<id> --save=out/<id>-base.json`)
-   and look at it (`compare` tool with the variant, or `npm run lab -- sheet --v=<variant>`). The picture is
+1. **Baseline.** Score it (`score` tool with the character, or `npm run characterlab -- score --part=<id> --save=out/<id>-base.json`)
+   and look at it (`compare` tool with the variant, or `npm run characterlab -- sheet --v=<variant>`). The picture is
    painting | code | difference: white where they match, colour where the drawing misses.
 2. **Measure on the picture**, never guess. Open the sheet and read coordinates off it; sample colours from flat areas
    (a small script that prints pixel colours, or crop and look). Note the outline colour and width and the shadow side.

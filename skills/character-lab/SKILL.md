@@ -28,7 +28,7 @@ where new characters go.
 4. Start it in the background: `npm start` (keep it running), and wait until `http://localhost:8765/` answers.
 5. Give the user **http://localhost:8765/lab/** (one character: `http://localhost:8765/lab/?char=<id>`).
 
-To check scores yourself: `npm run lab -- score` (Captain Kite's mean is 81.4 on its SwiftShader renderer, Chrome 155).
+To check scores yourself: `npm run characterlab -- score` (Captain Kite's mean is 81.4 on its SwiftShader renderer, Chrome 155).
 
 ## Which skill next
 

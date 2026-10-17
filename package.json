@@ -2,6 +2,29 @@
   "name": "character-lab",
   "version": "0.1.0",
   "description": "Characters drawn in code with WebGL2 and measured part by part against their reference sheets: a lab, a scorer and a pack format for your own characters.",
+  "keywords": [
+    "character-design",
+    "character-sheet",
+    "webgl",
+    "webgl2",
+    "procedural-graphics",
+    "image-comparison",
+    "drawing",
+    "animation",
+    "claude-code",
+    "codex",
+    "mcp",
+    "agent-skills"
+  ],
+  "homepage": "https://github.com/CharacterLab/CharacterLab#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CharacterLab/CharacterLab.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CharacterLab/CharacterLab/issues"
+  },
+  "author": "Dani Acosta (https://github.com/coolxeo)",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -10,7 +33,7 @@
   "scripts": {
     "start": "node server.mjs",
     "test": "node lab/scripts/run-tests.mjs",
-    "lab": "node lab/scripts/wc-lab.mjs",
+    "characterlab": "node lab/scripts/wc-lab.mjs",
     "new-pack": "node lab/scripts/new-pack.mjs"
   },
   "dependencies": {

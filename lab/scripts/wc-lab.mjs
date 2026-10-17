@@ -1,24 +1,24 @@
 // Character Lab from the command line: drives the lab/ pages in headless Chrome (the lab's own renderer
 // and scorer, on SwiftShader: see GL_ARGS) through the lab's own server (server.mjs, on a free port): the same packs
 // (lab.config.json, LAB_PACKS) and mounts as `npm start`.
-// Run from the lab's folder (`npm run lab -- <args>` is the same as `node lab/scripts/wc-lab.mjs <args>`):
-//   npm run lab -- score                       every variant
-//   npm run lab -- score --v=front --regions   one variant, plus every named part of the whole front
-//   npm run lab -- score --part=character      one part's variants
+// Run from the lab's folder (`npm run characterlab -- <args>` is the same as `node lab/scripts/wc-lab.mjs <args>`):
+//   npm run characterlab -- score                       every variant
+//   npm run characterlab -- score --v=front --regions   one variant, plus every named part of the whole front
+//   npm run characterlab -- score --part=character      one part's variants
 //     --save=out/base.json      keep the results as a baseline
 //     --compare=out/base.json   show the change against a saved baseline (parts too)
 //     --json                    print the raw JSON
-//   npm run lab -- shot --url="inspect.html?region=footL" --out=out/foot.png [--width=1400 --height=1000] [--full]
+//   npm run characterlab -- shot --url="inspect.html?region=footL" --out=out/foot.png [--width=1400 --height=1000] [--full]
 //     screenshot of a lab/ page (--url is relative to lab/, or from the root with a leading /: --url=/ is the home
 //     page) once it is ready; --selector=<css> shoots one element (default #shot, else the page), --full the whole page
 // Improving the drawing with subagents (a pack's agents/README.md; its agents/packages.json, or --packages=<file>):
-//   npm run lab -- board [--compare=out/base.json]     every variant by family (out/board.md + out/board.json)
-//   npm run lab -- check --baseline=out/base.json --package=face   exit 1 if anything outside the package's scope
+//   npm run characterlab -- board [--compare=out/base.json]     every variant by family (out/board.md + out/board.json)
+//   npm run characterlab -- check --baseline=out/base.json --package=face   exit 1 if anything outside the package's scope
 //     dropped by more than --tol (0.3) or lost its renderer; --scope='eyes,mouth,expr-*' instead of --package
-//   npm run lab -- sheet --v=eye-open [--out=out/sheets/eye-open.png] [--h=360]   painting | ours | difference
-//   npm run lab -- packages [--from=out/board.json]     each work package: variants, gaps, mean, worst five
+//   npm run characterlab -- sheet --v=eye-open [--out=out/sheets/eye-open.png] [--h=360]   painting | ours | difference
+//   npm run characterlab -- packages [--from=out/board.json]     each work package: variants, gaps, mean, worst five
 // Animation (js/wc-anim.js, the clips in js/anim/):
-//   npm run lab -- film --clip=nod [--frames=8] [--h=260] [--zoom=face|head|eyes|mouth|x,y,w,h] [--v=front] [--rig=1]
+//   npm run characterlab -- film --clip=nod [--frames=8] [--h=260] [--zoom=face|head|eyes|mouth|x,y,w,h] [--v=front] [--rig=1]
 //     out/film/<clip>.png: the clip's frames side by side (--group=eyes: every clip of a group, one row each; --clip=a,b)
 //     --fps=24 --cols=12 --labels=0 --idle=1: every frame at that rate, in a clean grid (to cut into a video)
 // File paths (--out, --save, --compare) are relative to the lab's folder; its out/ is git-ignored.

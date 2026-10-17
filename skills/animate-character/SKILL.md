@@ -68,7 +68,7 @@ A track is `[[time, value, ease?], …]` in seconds; pose channels are `rot` (de
 
 ## 5. Check it
 
-- `film` tool with the clip id (or `npm run lab -- film --clip=<clip-id> --frames=8`): the frames side by side. Look
+- `film` tool with the clip id (or `npm run characterlab -- film --clip=<clip-id> --frames=8`): the frames side by side. Look
   at it: parts must stay attached, nothing should jump between frames.
 - `npm test` must pass, and the still variants' scores must not drop (a pose of zero must draw exactly as before).
 - Give the user the link: the clip plays in the lab's Animations panel.
