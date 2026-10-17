@@ -1,6 +1,6 @@
 // The clip engine: clips move a character's face (its face params: js/wc-expressions.js) and its rig (p.pose:
 // js/wc-rig.js; the parts and pivots come with the character's scene) over time. The lab plays them (js/wc-lab.js:
-// the Animations panel), `npm run lab -- film --clip=<id>` draws them as filmstrips (anim.html). A character pack
+// the Animations panel), `npm run characterlab -- film --clip=<id>` draws them as filmstrips (anim.html). A character pack
 // brings its clips through registerCharacter's `clips` and the parts they may move through its `rig` (js/lab-packs.js).
 //
 // A clip: { id, label, group, dur (seconds), loop (repeats; else it plays once and the face returns to rest),

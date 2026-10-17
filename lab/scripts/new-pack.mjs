@@ -43,8 +43,8 @@ async function main() {
   console.log(`Made ${made.dir}/ (${made.size.join('×')} front sheet, figure box ${made.box.join(',')}${opts.box ? '' : ', found from the picture'}${made.variants.length > 1 ? `; ${made.variants.length} variants` : ''}).
 Next:
   ${env}npm start                              # the lab shows it at /lab/?char=${id}
-  ${env}npm run lab -- score --part=${id}    # its score
-  ${env}npm run lab -- sheet --v=${id}-front # out/sheets/: painting | code | difference
+  ${env}npm run characterlab -- score --part=${id}    # its score
+  ${env}npm run characterlab -- sheet --v=${id}-front # out/sheets/: painting | code | difference
 Then replace the placeholder in ${id}.js with real shapes, and score again.`);
 }
 

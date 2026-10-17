@@ -98,7 +98,7 @@ Kite, in the lab at <http://localhost:8765/lab/>. To check everything works:
 
 ```bash
 npm test                 # the engine's tests and every pack's own tests
-npm run lab -- score     # every variant's score, in headless Chrome
+npm run characterlab -- score     # every variant's score, in headless Chrome
 ```
 
 To start a character of your own from a picture, use the lab's **New character** page
@@ -141,7 +141,7 @@ Every variant gets a **fidelity** score (0–100) made of silhouette overlap, co
 ### Faces, rigs and clips
 
 A character can expose **face params** (eyes, lids, gaze, brows, mouth, blush), shown as buttons and sliders in the
-lab, plus a **rig** of parts that **clips** move over time. `anim.html` and `npm run lab -- film` lay a clip out as a
+lab, plus a **rig** of parts that **clips** move over time. `anim.html` and `npm run characterlab -- film` lay a clip out as a
 filmstrip.
 
 ![The wave clip as a filmstrip](docs/images/clip-wave.png)
@@ -257,15 +257,15 @@ Point the lab at the folder that holds your pack:
 
 ```bash
 LAB_PACKS=examples npm start                         # Blob appears in the lab
-LAB_PACKS=examples npm run lab -- score --part=blob  # blob-front  90.3
-LAB_PACKS=examples npm run lab -- sheet --v=blob-front --out=out/blob.png   # painting | code | difference
+LAB_PACKS=examples npm run characterlab -- score --part=blob  # blob-front  90.3
+LAB_PACKS=examples npm run characterlab -- sheet --v=blob-front --out=out/blob.png   # painting | code | difference
 ```
 
 ### Step 6: Improve, measure, repeat
 
-1. Save a baseline: `npm run lab -- score --save=out/base.json`.
+1. Save a baseline: `npm run characterlab -- score --save=out/base.json`.
 2. Change the drawing: a shape, a colour, the shadow.
-3. Run `npm run lab -- score --compare=out/base.json` to see each variant's change, and `sheet --v=...` to see where.
+3. Run `npm run characterlab -- score --compare=out/base.json` to see each variant's change, and `sheet --v=...` to see where.
 
 When the whole figure reads well, add more: more variants (turnaround, expressions, poses) as crops of more sheets, an
 `expressions` block for the lab's face buttons, and a `rig` and `clips` for animation. Captain Kite's pack shows
@@ -324,11 +324,11 @@ other packs then `"requires"` it to share one look. The API is documented at the
 
 | Command | What it does |
 |---------|--------------|
-| `npm run lab -- score` | every variant's score (`--part=`, `--v=`, `--save=`, `--compare=`, `--json`) |
-| `npm run lab -- sheet --v=<id>` | painting \| code \| difference image for one variant |
-| `npm run lab -- shot --url=<page>` | screenshot of a lab page once it's ready (`--url=/` the home page, `--full`) |
-| `npm run lab -- film --clip=<id>` | a clip's frames as a filmstrip (`--frames`, `--zoom`, `--fps`) |
-| `npm run lab -- board` / `check` / `packages` | group scores by family, guard a change, split work into packages |
+| `npm run characterlab -- score` | every variant's score (`--part=`, `--v=`, `--save=`, `--compare=`, `--json`) |
+| `npm run characterlab -- sheet --v=<id>` | painting \| code \| difference image for one variant |
+| `npm run characterlab -- shot --url=<page>` | screenshot of a lab page once it's ready (`--url=/` the home page, `--full`) |
+| `npm run characterlab -- film --clip=<id>` | a clip's frames as a filmstrip (`--frames`, `--zoom`, `--fps`) |
+| `npm run characterlab -- board` / `check` / `packages` | group scores by family, guard a change, split work into packages |
 
 The header of `lab/scripts/wc-lab.mjs` lists every option. Output goes to `out/` (git-ignored).
 

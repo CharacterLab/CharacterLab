@@ -33,7 +33,7 @@ first score.
 ```bash
 npm run new-pack -- <id> --sheet=<front.png> --label="<Name>"     # --box=x,y,w,h if the figure isn't found well
 npm test
-npm run lab -- score --part=<id>
+npm run characterlab -- score --part=<id>
 ```
 
 `<id>` is lowercase letters, digits and dashes (`star-girl`). The pack is `packs/<id>/` (or `--dir=<folder>`).

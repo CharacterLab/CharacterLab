@@ -40,12 +40,12 @@ both; if one is missing, tell the user what to install rather than installing sy
 ```bash
 npm ci
 npm test                    # must pass before and after your change
-npm run lab -- score        # every variant's score; Captain Kite's mean is about 82.7
+npm run characterlab -- score        # every variant's score; Captain Kite's mean is about 82.7
 npm start                   # in the background; give the user http://localhost:8765/lab/
 ```
 
-Other commands: `npm run new-pack` (start a character), `npm run lab -- sheet --v=<variant>` (painting | code |
-difference), `npm run lab -- film --clip=<id>` (filmstrip). The header of `lab/scripts/wc-lab.mjs` lists every option.
+Other commands: `npm run new-pack` (start a character), `npm run characterlab -- sheet --v=<variant>` (painting | code |
+difference), `npm run characterlab -- film --clip=<id>` (filmstrip). The header of `lab/scripts/wc-lab.mjs` lists every option.
 
 ## Rules
 
@@ -55,7 +55,7 @@ difference), `npm run lab -- film --clip=<id>` (filmstrip). The header of `lab/s
   engine lacks is a renderer extension (`*-gl.js`), not an engine edit.
 - **Keep ids prefixed.** Variant ids and sheet keys start with the pack id (`star-girl-front`).
 - **Pass the checks.** `npm test` passes, and other characters' scores don't drop (compare with a baseline saved
-  before your change: `npm run lab -- score --save=out/base.json`, then `--compare=out/base.json`).
+  before your change: `npm run characterlab -- score --save=out/base.json`, then `--compare=out/base.json`).
 - **Mind the license.** A pack carries its own `license`. Only add pictures the user has the rights to; keep private
   characters outside this repository (`lab.config.json` or `LAB_PACKS`).
 - **Never commit** `out/`, `node_modules/` or `lab.config.json`.
