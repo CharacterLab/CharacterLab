@@ -1,4 +1,9 @@
-# Character Lab
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/logo-wordmark-dark.svg">
+    <img src="docs/brand/logo-wordmark-light.svg" alt="Character Lab" height="80">
+  </picture>
+</h1>
 
 **Draw characters in code, and measure how close you got.**
 
@@ -345,6 +350,7 @@ lab/                  the engine
 packs/                the lab's own packs: captain-kite/ and the pack format (README.md)
 examples/blob/        the guide's tutorial character
 docs/images/          the pictures in this README
+docs/brand/           the logo (SVG, light and dark wordmarks, a 512 px PNG)
 tests/                server, config, pack API, loader and renderer tests
 ```
 
