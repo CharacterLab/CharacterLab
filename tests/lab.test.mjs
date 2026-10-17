@@ -57,20 +57,25 @@ test('the home page leads to the lab and its tools', async t => {
   assert.equal(res.status, 200);
   assert.match(res.headers.get('content-type'), /text\/html/);
   const html = await res.text();
-  for (const href of ['lab/', 'lab/score.html', 'lab/anim.html', 'lab/cel.html']) assert.ok(html.includes(`href="${href}"`), `home links to ${href}`);
+  for (const href of ['lab/', 'lab/new.html', 'lab/?char=captain-kite', 'lab/score.html', 'lab/anim.html', 'lab/cel.html']) assert.ok(html.includes(`href="${href}"`), `home links to ${href}`);
+  const lab = await (await fetch(`${base}/lab/`)).text();
+  assert.ok(lab.includes('href="new.html"'), 'the lab has a New character button');
 });
 
 test('the lab pages and a pack\'s page are served as they are', async t => {
   const {server, base} = await startLab();
   t.after(() => server.close());
-  for (const path of ['/lab/', '/lab/score.html', '/lab/inspect.html', '/lab/bake.html', '/lab/anim.html', '/lab/cel.html', '/packs/pip/tool.html']) {
+  for (const path of ['/lab/', '/lab/new.html', '/lab/score.html', '/lab/inspect.html', '/lab/bake.html', '/lab/anim.html', '/lab/cel.html', '/packs/pip/tool.html']) {
     const res = await fetch(`${base}${path}`);
     assert.equal(res.status, 200, path);
     assert.match(res.headers.get('content-type'), /text\/html/, path);
   }
-  const js = await fetch(`${base}/lab/js/wc-gl.js`);
-  assert.equal(js.status, 200);
-  assert.match(js.headers.get('content-type'), /javascript/);
+  for (const path of ['/lab/js/wc-gl.js', '/lab/js/lab-new.mjs', '/lab/js/lab-box.mjs', '/lab/js/lab-pack-rules.mjs']) {
+    const js = await fetch(`${base}${path}`);
+    assert.equal(js.status, 200, path);
+    assert.match(js.headers.get('content-type'), /javascript/, path);
+  }
+  assert.match((await fetch(`${base}/lab/css/app.css`)).headers.get('content-type'), /text\/css/);
   const folder = await fetch(`${base}/lab?part=ears`, {redirect: 'manual'});
   assert.equal(folder.status, 301);
   assert.equal(folder.headers.get('location'), '/lab/?part=ears');
@@ -92,7 +97,7 @@ test('scripts, tests, package files and server code are never served', async t =
   t.after(() => server.close());
   for (const path of [
     '/.env', '/.gitignore', '/server.mjs', '/lab-config.mjs', '/lab.config.json', '/lab.config.example.json', '/static-mounts.js', '/README.md', '/LICENSE',
-    '/package.json', '/package-lock.json', '/tests/lab.test.mjs', '/node_modules/three/package.json', '/node_modules/puppeteer-core/package.json',
+    '/package.json', '/package-lock.json', '/lab-api.mjs', '/lab/scripts/pack-maker.mjs', '/lab/scripts/png.mjs', '/tests/lab.test.mjs', '/node_modules/three/package.json', '/node_modules/puppeteer-core/package.json',
     '/lab/scripts/wc-lab.mjs', '/lab/scripts', '/lab/scripts/', '/lab/tests/wc-lab-cli.test.mjs', '/lab/tests/',
     '/lab/Scripts/wc-lab.mjs', '/lab/%73cripts/wc-lab.mjs', '/lab/TESTS/wc-lab-cli.test.mjs', '/lab/js/', '/lab/js/wc-gl.js/',
   ]) {

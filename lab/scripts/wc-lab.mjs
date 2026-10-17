@@ -8,8 +8,9 @@
 //     --save=out/base.json      keep the results as a baseline
 //     --compare=out/base.json   show the change against a saved baseline (parts too)
 //     --json                    print the raw JSON
-//   npm run lab -- shot --url="inspect.html?region=footL" --out=out/foot.png
-//     screenshot of a lab/ page (--url is relative to lab/) once its title reads READY or DONE
+//   npm run lab -- shot --url="inspect.html?region=footL" --out=out/foot.png [--width=1400 --height=1000] [--full]
+//     screenshot of a lab/ page (--url is relative to lab/, or from the root with a leading /: --url=/ is the home
+//     page) once it is ready; --selector=<css> shoots one element (default #shot, else the page), --full the whole page
 // Improving the drawing with subagents (a pack's agents/README.md; its agents/packages.json, or --packages=<file>):
 //   npm run lab -- board [--compare=out/base.json]     every variant by family (out/board.md + out/board.json)
 //   npm run lab -- check --baseline=out/base.json --package=face   exit 1 if anything outside the package's scope
@@ -80,21 +81,24 @@ export function report(rows, base) {
 }
 
 // --- browser ---
+// Headless Chrome with WebGL, as the lab's commands and its page tests use it (CHROME= overrides the path).
+export const chromePath = () => process.env.CHROME || CHROME;
+export const launchChrome = () => puppeteer.launch({ executablePath: chromePath(), headless: true,
+  args: ['--ignore-gpu-blocklist', '--enable-webgl', ...GL_ARGS, '--disable-renderer-backgrounding', '--disable-background-timer-throttling'] });
 async function withLab(fn) {
   const server = createLabServer({ config: readConfig() });
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
-  const browser = await puppeteer.launch({ executablePath: process.env.CHROME || CHROME, headless: true,
-    args: ['--ignore-gpu-blocklist', '--enable-webgl', ...GL_ARGS, '--disable-renderer-backgrounding', '--disable-background-timer-throttling'] });
+  const browser = await launchChrome();
   try {
     return await fn(browser, `http://127.0.0.1:${server.address().port}${LAB_PATH}`);
   } finally {
     await browser.close(); server.close();
   }
 }
-async function openUntil(browser, url, done, width = 1400) {
+async function openUntil(browser, url, done, width = 1400, height = 1000) {
   const page = await browser.newPage();
   page.on('pageerror', (e) => console.error('[page error]', e.message));
-  await page.setViewport({ width, height: 1000, deviceScaleFactor: 1 });
+  await page.setViewport({ width, height, deviceScaleFactor: 1 });
   const res = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 0 });   // anim.html draws synchronously before load
   if (!res || !res.ok()) throw new Error(`${url}: HTTP ${res ? res.status() : 'no response'}`);
   await page.waitForFunction(done, { timeout: 600000 });
@@ -181,8 +185,9 @@ async function shot(o) {
   const out = labFile(o.out);
   await withLab(async (browser, base) => {
     // the lab (index.html) is ready once its score is shown (window.__wcScore); bake.html titles itself "score {…}"
-    // once drawn; the other pages set READY or DONE
-    const page = await openUntil(browser, base + o.url, () => /^(READY|DONE|ERROR|score )/.test(document.title) || !!window.__wcScore, +(o.width || 1400));
+    // once drawn; the home page and new.html set window.__labReady; the other pages set READY or DONE
+    const url = o.url.startsWith('/') ? new URL(o.url, base).href : base + o.url;
+    const page = await openUntil(browser, url, () => /^(READY|DONE|ERROR|score )/.test(document.title) || !!window.__wcScore || !!window.__labReady, +(o.width || 1400), +(o.height || 1000));
     const el = await page.$(o.selector || '#shot');
     await mkdir(dirname(out), { recursive: true });
     // --tight: only the element's children (a flex row is as wide as the page)
@@ -191,7 +196,7 @@ async function shot(o) {
       const x = Math.min(...rs.map((r) => r.left)), y = Math.min(...rs.map((r) => r.top));
       return { x, y, width: Math.max(...rs.map((r) => r.right)) - x, height: Math.max(...rs.map((r) => r.bottom)) - y };
     }) : null;
-    await (clip ? page.screenshot({ path: out, clip }) : (el || page).screenshot({ path: out }));
+    await (clip ? page.screenshot({ path: out, clip }) : el ? el.screenshot({ path: out }) : page.screenshot({ path: out, fullPage: !!o.full }));
   });
   console.log(out);
 }

@@ -327,7 +327,8 @@
     $("#char-name").textContent = "No characters";
     $("#part-name").textContent = "No character packs found";
     $("#note").innerHTML = "No character packs found; see <code>packs/README.md</code> (a pack folder with a <code>pack.json</code>, " +
-      "in the lab's <code>packs/</code>, or in a folder named by <code>lab.config.json</code> or <code>LAB_PACKS</code>).";
+      "in the lab's <code>packs/</code>, or in a folder named by <code>lab.config.json</code> or <code>LAB_PACKS</code>), " +
+      "or <a href=\"new.html\">start a new character</a> from a picture.";
     for (const id of ["play", "play2"]) $("#" + id).disabled = true;
     $("#score").textContent = "–";
     $("#app").classList.add("closed"); $("#sidebar-toggle").disabled = true;   // nothing to control

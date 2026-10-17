@@ -43,6 +43,7 @@
   .icon-btn:hover { border-color: var(--ink-2); }
   .icon-btn[aria-pressed="true"] { background: var(--key); border-color: var(--key); color: var(--on-key); }
   .icon-btn.round { padding: 8px; }
+  a.icon-btn { color: var(--ink); text-decoration: none; }
 
   .stage { grid-column: 1; padding: 16px 20px 24px; min-width: 0; }
   .stage-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
@@ -100,7 +101,7 @@
   }
   @media (max-width: 640px) {
     .topbar { padding: 10px 16px; gap: 10px; }
-    .back, .eyebrow, #play span { display: none; }
+    .back, .eyebrow, #play span, #new-char span { display: none; }
     h1 { font-size: 21px; }
     .stage { padding: 12px 16px 20px; }
     .panels { grid-template-columns: minmax(0, 1fr); }
@@ -140,6 +141,7 @@
         <p class="eyebrow">Character Lab</p>
         <h1><span id="char-name">Character</span> <span>· part by part, image vs WebGL</span></h1>
       </div>
+      <a class="icon-btn" id="new-char" href="new.html" title="Start a new character from a picture"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New character</span></a>
       <button class="icon-btn" id="play" aria-pressed="false" title="Play the part's animation (space)"><svg class="i"><use href="#i-play"/></svg><span>Animate</span></button>
       <button class="icon-btn round" id="sidebar-toggle" aria-expanded="true" aria-controls="sidebar" title="Show or hide the controls"><svg class="i"><use href="#i-panel"/></svg></button>
     </header>
