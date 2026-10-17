@@ -2,6 +2,8 @@
 // the test runner). Everything is optional:
 //   lab.config.json (next to this file)   { "packs": ["../character-packs"], "mounts": { "/sheets/": "../sheets/" } }
 //   LAB_PACKS=/a/packs:/b/packs           more pack folders (colon-separated; relative paths are relative to the lab)
+//   "newPacksDir": "../my-packs"          where the lab's new-character page makes packs (default: its own packs/);
+//   LAB_NEW_PACKS=/a/packs                the same, from the environment (it wins). That folder is searched too.
 // The lab's own packs/ folder is always searched first. A pack folder holds one folder per pack, each with a
 // pack.json (packs/README.md). Paths in lab.config.json are relative to the lab folder.
 import { readFile, readdir, stat } from 'node:fs/promises';
@@ -14,9 +16,11 @@ const ID = /^[a-z][a-z0-9-]*$/;
 const SCRIPT = /^(?!.*(^|\/)\.)[\w./-]+\.js$/;
 // An icon a pack ships (pack.json "icon", "icons"): a relative .svg path inside the pack, the same rules.
 const SVG = /^(?!.*(^|\/)\.)[\w./-]+\.svg$/;
+// A picture a pack names (pack.json "thumb": its card on the home page), the same rules.
+const IMAGE = /^(?!.*(^|\/)\.)[\w./-]+\.(png|jpe?g|webp)$/;
 // A mount prefix: /name/…/ in plain characters, never one of the lab's own paths.
 const PREFIX = /^\/[\w-]+(\/[\w.-]+)*\/$/;
-const RESERVED = /^\/(studio|packs|node_modules)\//;
+const RESERVED = /^\/(lab|studio|packs|api|node_modules)\//;   // /studio/ redirects to /lab/; /api/ is the server's
 
 const asList = (x, what) => {
   if (x == null) return [];
@@ -24,7 +28,8 @@ const asList = (x, what) => {
   return x;
 };
 
-// The config: { file, packDirs: [absolute folders, the lab's packs/ first], mounts: { prefix: file URL of a folder } }.
+// The config: { file, packDirs: [absolute folders, the lab's packs/ first], mounts: { prefix: file URL of a folder },
+// newPacksDir: the absolute folder new packs are made in }.
 // A missing lab.config.json is an empty one; a broken one is an error (it would silently drop packs otherwise).
 export async function readConfig({ labDir = LAB_DIR, env = process.env } = {}) {
   const file = join(labDir, 'lab.config.json');
@@ -35,7 +40,9 @@ export async function readConfig({ labDir = LAB_DIR, env = process.env } = {}) {
   }
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('lab.config.json must be an object');
   const fromEnv = (env.LAB_PACKS || '').split(':').filter(Boolean);
-  const packDirs = [...new Set([join(labDir, 'packs'), ...asList(raw.packs, 'packs'), ...fromEnv].map((p) => resolve(labDir, p)))];
+  if (raw.newPacksDir != null && (typeof raw.newPacksDir !== 'string' || !raw.newPacksDir)) throw new Error('lab.config.json: "newPacksDir" must be a folder');
+  const newPacks = env.LAB_NEW_PACKS || raw.newPacksDir || null;
+  const packDirs = [...new Set([join(labDir, 'packs'), ...asList(raw.packs, 'packs'), ...fromEnv, ...(newPacks ? [newPacks] : [])].map((p) => resolve(labDir, p)))];
   const mounts = {};
   if (raw.mounts != null) {
     if (typeof raw.mounts !== 'object' || Array.isArray(raw.mounts)) throw new Error('lab.config.json: "mounts" must map URL prefixes to folders');
@@ -46,7 +53,7 @@ export async function readConfig({ labDir = LAB_DIR, env = process.env } = {}) {
       mounts[prefix] = pathToFileURL(abs.endsWith(sep) ? abs : abs + sep);
     }
   }
-  return { file, packDirs, mounts };
+  return { file, packDirs, mounts, newPacksDir: resolve(labDir, newPacks || 'packs') };
 }
 
 // Checks one pack.json; returns a list of problems (empty when it is fine).
@@ -64,6 +71,7 @@ export function manifestProblems(m, folder) {
   if (m.icon != null && !(typeof m.icon === 'string' && SVG.test(m.icon))) out.push(`bad icon path ${JSON.stringify(m.icon)}`);
   if (m.icons != null && !(m.icons && typeof m.icons === 'object' && !Array.isArray(m.icons)
     && Object.entries(m.icons).every(([k, v]) => ID.test(k) && typeof v === 'string' && SVG.test(v)))) out.push('icons must map names to .svg paths');
+  if (m.thumb != null && !(typeof m.thumb === 'string' && IMAGE.test(m.thumb))) out.push(`bad thumb path ${JSON.stringify(m.thumb)}`);
   if (m.requires != null && !(Array.isArray(m.requires) && m.requires.every((r) => typeof r === 'string' && ID.test(r)))) out.push('requires must be a list of pack ids');
   return out;
 }
@@ -72,6 +80,12 @@ export function manifestProblems(m, folder) {
 export const isGL = (script) => script.endsWith('-gl.js');
 
 const isDir = async (p) => (await stat(p).catch(() => null))?.isDirectory() ?? false;
+
+// A pack's picture for its card when pack.json names none: sheets/front.png, else the first picture in sheets/.
+async function firstSheet(dir) {
+  const names = (await readdir(join(dir, 'sheets')).catch(() => [])).filter((f) => IMAGE.test(f)).sort();
+  return names.includes('front.png') ? 'sheets/front.png' : names.length ? `sheets/${names[0]}` : null;
+}
 
 // Every pack in the config's folders, in load order: by "order" (packs without one last), then folder, then id, each
 // after the packs it requires (pack.json "requires": ["<pack id>"]).
@@ -92,7 +106,7 @@ export async function findPacks(config) {
       if (seen.has(m.id)) { problems.push(`${dir}: pack "${m.id}" is already loaded from ${seen.get(m.id)}`); continue; }
       seen.set(m.id, dir);
       packs.push({ id: m.id, label: m.label, kind: m.kind || 'character', requires: m.requires || [], dir, base: `/packs/${m.id}/`,
-        scripts: m.scripts, order: m.order ?? Infinity, rank, manifest: m });
+        scripts: m.scripts, order: m.order ?? Infinity, rank, manifest: m, thumb: m.thumb || await firstSheet(dir) });
     }
   }
   packs.sort((a, b) => a.order - b.order || a.rank - b.rank || (a.id < b.id ? -1 : 1));
@@ -119,9 +133,10 @@ function withRequirements(packs, problems) {
   return out;
 }
 
-// What GET /packs.json answers: each pack's id, label, kind, served base and scripts (no paths on disk).
+// What GET /packs.json answers: each pack's id, label, kind, served base, scripts, icons and card picture (thumb: a
+// served URL), no paths on disk.
 export const publicManifest = ({ packs, problems }) => ({
-  packs: packs.map(({ id, label, kind, requires, base, scripts, manifest }) => ({ id, label, kind, requires, version: manifest.version || null, base, scripts,
-    icon: manifest.icon || null, icons: manifest.icons || {} })),
+  packs: packs.map(({ id, label, kind, requires, base, scripts, manifest, thumb }) => ({ id, label, kind, requires, version: manifest.version || null, base, scripts,
+    icon: manifest.icon || null, icons: manifest.icons || {}, thumb: thumb ? base + thumb : null, description: manifest.description || null })),
   problems: problems.length,   // how many packs were left out (the server prints why; no disk paths go to the page)
 });

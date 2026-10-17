@@ -1,22 +1,24 @@
-// The lab's local server: the home page, the studio (studio/), the character packs it finds (lab-config.mjs) at
-// /packs/<id>/ with their manifest at /packs.json, and any extra folders lab.config.json mounts. Read-only, browser
-// assets only, loopback only. `npm start` runs it; the command line (studio/scripts/wc-lab.mjs) runs its own copy.
+// The lab's local server: the home page, the lab's pages (lab/), the character packs it finds (lab-config.mjs) at
+// /packs/<id>/ with their manifest at /packs.json, and any extra folders lab.config.json mounts. Browser assets only,
+// loopback only, read-only but for one write: POST /api/characters makes a new pack (lab-api.mjs). `npm start` runs
+// it; the command line (lab/scripts/wc-lab.mjs) runs its own copy.
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {sep} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {mountTypes, readMounted, resolveMount} from './static-mounts.js';
 import {findPacks, publicManifest, readConfig} from './lab-config.mjs';
+import {createCharacter} from './lab-api.mjs';
 
 const root = new URL('./', import.meta.url);
 // The only file served from the lab's root: server code, tests, package files and dotfiles never are.
 const rootFiles = new Set(['index.html']);
-// The studio: its pages, scripts and styles, never its command-line scripts, tests or package files.
-const pageFolders = {'/studio/': new URL('studio/', root)};
-// Plain ASCII names only, so a case-insensitive disk cannot open studio/Scripts/ instead.
+// The lab: its pages, scripts and styles, never its command-line scripts, tests or package files.
+const pageFolders = {'/lab/': new URL('lab/', root)};
+// Plain ASCII names only, so a case-insensitive disk cannot open lab/Scripts/ instead.
 const isPackageFile = path => /(^|\/)package(-lock)?\.json$/i.test(path);
 const isPrivate = path => !/^[\w./-]+$/.test(path)
-  || /^\/studio\/(scripts|tests)(\/|$)|\.test\.mjs$/i.test(path) || isPackageFile(path);
+  || /^\/lab\/(scripts|tests)(\/|$)|\.test\.mjs$/i.test(path) || isPackageFile(path);
 // A pack's tests, tools and dependencies stay private; its pages, scripts, data and sheets are served.
 const isPackPrivate = path => !/^[\w./-]+$/.test(path)
   || /^\/packs\/[\w-]+\/(scripts|tests|tools|node_modules)(\/|$)|\.test\.mjs$/i.test(path) || isPackageFile(path);
@@ -44,6 +46,11 @@ export function createLabServer({config = readConfig(), mounts = null} = {}) {
       const host = req.headers.host || '';
       if (!/^(localhost|127\.0\.0\.1):\d+$/.test(host)) return send(res, 403, {error: 'Invalid local host.'});
       const url = new URL(req.url, `http://${host}`);
+      if (url.pathname === '/api/characters') {
+        if (req.method === 'POST') return await createCharacter(req, res, {config: await cfg, host, send});
+        res.setHeader('Allow', 'POST');
+        return send(res, 405, {error: 'Use POST.'});
+      }
       if (!['GET', 'HEAD'].includes(req.method)) return send(res, 405, {error: 'Use GET.'});
       const headers = type => ({'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'});
       const redirect = (location, status = 301) => { res.writeHead(status, {Location: location}); res.end(); };
@@ -54,8 +61,10 @@ export function createLabServer({config = readConfig(), mounts = null} = {}) {
         res.writeHead(200, headers(mounted.type));
         return res.end(req.method === 'HEAD' ? undefined : content);
       };
+      // The lab's pages were once under /studio/: old links land on the same page under /lab/.
+      if (url.pathname === '/studio' || url.pathname.startsWith('/studio/')) return redirect(`/lab${url.pathname.slice('/studio'.length) || '/'}${url.search}`);
       if (Object.hasOwn(pageFolders, `${url.pathname}/`)) return redirect(`${url.pathname}/${url.search}`);
-      // The character packs the lab found (lab-config.mjs): the pages load them through studio/js/lab-loader.js.
+      // The character packs the lab found (lab-config.mjs): the pages load them through lab/js/lab-loader.js.
       if (url.pathname === '/packs.json') {
         res.writeHead(200, headers('application/json; charset=utf-8'));
         return res.end(req.method === 'HEAD' ? undefined : JSON.stringify(publicManifest(await packsNow())));

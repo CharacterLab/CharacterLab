@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { checkPack, loadLab } from '../../../studio/scripts/lab-vm.mjs';
+import { checkPack, loadLab } from '../../../lab/scripts/lab-vm.mjs';
 
 // Captain Kite, the open-source example pack: its manifest and registration, every variant's scene, the face params,
 // the rig and clips, its sheets and license, no private words, and (with Chrome) its scores above a floor.
@@ -98,7 +98,7 @@ test('every variant scores above its floor', { skip: !existsSync(CHROME) && 'no 
   const rows = [];
   for (const part of ['captain-kite', 'kite-parts', 'kite-expressions', 'kite-poses']) {
     const save = join(dir, `${part}.json`);
-    const r = spawnSync(process.execPath, ['studio/scripts/wc-lab.mjs', 'score', `--part=${part}`, `--save=${save}`], { cwd: LAB_DIR, encoding: 'utf8' });
+    const r = spawnSync(process.execPath, ['lab/scripts/wc-lab.mjs', 'score', `--part=${part}`, `--save=${save}`], { cwd: LAB_DIR, encoding: 'utf8' });
     assert.equal(r.status, 0, r.stderr);
     rows.push(...JSON.parse(await readFile(save, 'utf8')));
   }

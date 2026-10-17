@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "character-lab",
+  "displayName": "Character Lab",
+  "version": "0.1.0",
+  "description": "Draw characters in code from your pictures, score each drawing against its picture, and animate them: skills and an MCP server for Character Lab.",
+  "author": { "name": "Character Lab" },
+  "homepage": "https://github.com/CharacterLab/CharacterLab",
+  "repository": "https://github.com/CharacterLab/CharacterLab",
+  "license": "MIT",
+  "keywords": ["character", "drawing", "webgl", "animation", "reference-sheet", "scoring", "mcp", "skills"]
+}

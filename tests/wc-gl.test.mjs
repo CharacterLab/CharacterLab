@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-// The renderer's extension API (studio/js/wc-gl.js: registerMaterial, registerMode) and the shader it composes.
+// The renderer's extension API (lab/js/wc-gl.js: registerMaterial, registerMode) and the shader it composes.
 // No GPU here: the composed GLSL is checked as text; npm run lab -- score / shot run it for real. How the private
 // packs' materials splice in is tested in those packs.
 const LAB = new URL('../', import.meta.url);
-const ENGINE = new URL('studio/js/wc-gl.js', LAB);
+const ENGINE = new URL('lab/js/wc-gl.js', LAB);
 
 async function engine(extra = []) {
   const ctx = vm.createContext({});
@@ -72,7 +72,7 @@ test('a missing or circular requirement is reported when the shader is composed'
 });
 
 test('the cel demo page draws engine-only cel fills', async () => {
-  const html = await readFile(new URL('studio/cel.html', LAB), 'utf8');
+  const html = await readFile(new URL('lab/cel.html', LAB), 'utf8');
   const srcs = [...html.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(srcs, ['js/wc-gl.js'], 'no pack: the engine alone');
   assert.match(html, /type: 8/);

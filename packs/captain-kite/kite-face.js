@@ -3,7 +3,7 @@
 // eyes as openings and irises, brows as centre lines with a thickness, the nose's shadow, the mouth's corners), and the
 // face params move it. CharacterLab.captainKite.face(F, p, C) -> { brows: [ops], face: [ops] }; the brows go under the mask.
 //
-// Face params (the studio's conventions; every one optional, an absent one draws the face as the sheet paints it):
+// Face params (the lab's conventions; every one optional, an absent one draws the face as the sheet paints it):
 //   eyes / eyeL / eyeR   'open' | 'wide' | 'half' | 'closed' = 'sleepy' (a ‿ line) | 'happy' (an arch ^) | 'wink'
 //                        (L / R: the eye on the viewer's left / right)
 //   lid / lidL / lidR    0..1, the upper lid comes down (a blink)

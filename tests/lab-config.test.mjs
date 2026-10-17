@@ -55,7 +55,7 @@ test('lab.config.json and LAB_PACKS add pack folders (relative to the lab) and m
 test('a broken lab.config.json is an error, not an empty config', async () => {
   for (const [config, message] of [['{ nope', /lab.config.json/], [{ packs: '../cast' }, /"packs" must be a list/],
     [{ mounts: { 'sheets/': '../x' } }, /bad mount prefix/], [{ mounts: { '/packs/': '../x' } }, /bad mount prefix/],
-    [{ mounts: { '/studio/': '../x' } }, /bad mount prefix/], [{ mounts: { '/x/': '' } }, /needs a folder/], [[], /must be an object/]]) {
+    [{ mounts: { '/lab/': '../x' } }, /bad mount prefix/], [{ mounts: { '/x/': '' } }, /needs a folder/], [[], /must be an object/]]) {
     const lab = await tree({ 'lab.config.json': typeof config === 'string' ? config : JSON.stringify(config) });
     await assert.rejects(readConfig({ labDir: lab, env: {} }), message, JSON.stringify(config));
   }
@@ -79,7 +79,30 @@ test('packs load by their order, then by folder, then by id; broken or duplicate
   const pub = publicManifest({ packs, problems });
   assert.equal(pub.problems, problems.length);
   assert.ok(!JSON.stringify(pub).includes(own), 'no paths on disk in /packs.json');
-  assert.deepEqual(Object.keys(pub.packs[0]).sort(), ['base', 'icon', 'icons', 'id', 'kind', 'label', 'requires', 'scripts', 'version']);
+  assert.deepEqual(Object.keys(pub.packs[0]).sort(), ['base', 'description', 'icon', 'icons', 'id', 'kind', 'label', 'requires', 'scripts', 'thumb', 'version']);
+});
+
+test('new packs go to the lab\'s packs/, or "newPacksDir", or LAB_NEW_PACKS, and that folder is searched too', async () => {
+  const lab = await tree({ 'README.md': '' });
+  assert.equal((await readConfig({ labDir: lab, env: {} })).newPacksDir, join(lab, 'packs'));
+  const configured = await tree({ 'lab.config.json': { newPacksDir: '../made' } });
+  const c = await readConfig({ labDir: configured, env: {} });
+  assert.equal(c.newPacksDir, join(configured, '..', 'made'));
+  assert.deepEqual(c.packDirs, [join(configured, 'packs'), join(configured, '..', 'made')]);
+  assert.equal((await readConfig({ labDir: configured, env: { LAB_NEW_PACKS: '/tmp/elsewhere' } })).newPacksDir, '/tmp/elsewhere');
+  await assert.rejects(readConfig({ labDir: await tree({ 'lab.config.json': { newPacksDir: 3 } }), env: {} }), /newPacksDir/);
+});
+
+test('a pack\'s card picture: pack.json "thumb", else sheets/front.png, else its first sheet', async () => {
+  const dir = await tree({
+    'a/pack.json': manifest('a', { thumb: 'art/card.webp' }), 'b/pack.json': manifest('b'), 'b/sheets/front.png': '', 'b/sheets/back.png': '',
+    'c/pack.json': manifest('c'), 'c/sheets/02-side.png': '', 'c/sheets/01-front.png': '', 'd/pack.json': manifest('d'),
+    'e/pack.json': manifest('e', { thumb: '../x.png' }),
+  });
+  const { packs, problems } = await findPacks({ packDirs: [dir], mounts: {} });
+  assert.deepEqual(publicManifest({ packs, problems }).packs.map((p) => [p.id, p.thumb]),
+    [['a', '/packs/a/art/card.webp'], ['b', '/packs/b/sheets/front.png'], ['c', '/packs/c/sheets/01-front.png'], ['d', null]]);
+  assert.match(problems.join('\n'), /bad thumb path/);
 });
 
 // fetch() normalises "..", so traversal probes go through a raw request.
@@ -129,16 +152,16 @@ test('the server lists the packs it found and serves each one read-only at /pack
   assert.equal(folder.headers.get('location'), '/packs/pip/sheets/');
 });
 
-test('with no packs at all the server answers an empty manifest and the studio page still loads', async (t) => {
+test('with no packs at all the server answers an empty manifest and the lab page still loads', async (t) => {
   const { server, base } = await serve({ packDirs: [join(await tree({ 'x.txt': '' }), 'packs')], mounts: {} });
   t.after(() => server.close());
   assert.deepEqual(await (await fetch(`${base}/packs.json`)).json(), { packs: [], problems: 0 });
-  for (const path of ['/studio/', '/studio/js/lab-loader.js', '/studio/js/wc-lab.js', '/']) assert.equal((await fetch(`${base}${path}`)).status, 200, path);
+  for (const path of ['/lab/', '/lab/js/lab-loader.js', '/lab/js/wc-lab.js', '/']) assert.equal((await fetch(`${base}${path}`)).status, 200, path);
 });
 
-test('the studio shows an empty state when no pack registered a character', async () => {
+test('the lab shows an empty state when no pack registered a character', async () => {
   const { readFile } = await import('node:fs/promises');
-  const js = await readFile(new URL('../studio/js/wc-lab.js', import.meta.url), 'utf8');
+  const js = await readFile(new URL('../lab/js/wc-lab.js', import.meta.url), 'utf8');
   assert.match(js, /if \(!E\.parts\.length\) return empty\(\);/);
   assert.match(js, /No character packs found; see <code>packs\/README\.md<\/code>/);
 });

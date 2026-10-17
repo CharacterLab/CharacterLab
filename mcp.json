@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "character-lab": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./mcp/server.mjs"],
+      "cwd": "${PLUGIN_ROOT}",
+      "env": { "CHARACTER_LAB_PLUGIN": "1" }
+    }
+  }
+}
