@@ -88,7 +88,7 @@ test('the rig and the clips: a blink and the waving hand', async () => {
 // floor set from its measured fidelity (about 3 points under it). The floors were measured on macOS, where the
 // command line then rendered with Metal; it now renders with SwiftShader on every machine (GL_ARGS in
 // lab/scripts/wc-lab.mjs), so the test gives the same scores everywhere. The same drawing scores a little lower on
-// SwiftShader: on Chrome 155 on Linux, 8 of the 26 variants were under their Metal floor by 0.3 to 1.7 points (worst
+// SwiftShader: on Chrome 155 on Linux, 8 of the 26 variants were under their Metal floor by 0.2 to 1.7 points (worst
 // kite-pose-sit 83.3 under 85) and the mean was 81.4 against the 82.7 the docs gave. RENDERER_TOLERANCE covers that gap
 // and nothing more; every floor below is still the one measured on the Mac.
 const RENDERER_TOLERANCE = 2;
