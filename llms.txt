@@ -1,0 +1,34 @@
+# Character Lab
+
+> Draw characters in code, and measure how close you got.
+
+Character Lab is an open-source (MIT) lab for drawing 2D characters entirely in code, with a WebGL2 renderer and no images at render time, and scoring each drawing part by part against its reference picture. It runs locally with Node.js 22.12+ and Google Chrome: the lab shows the painted reference sheet next to the live code drawing, with five compare modes (side by side, onion, difference, wipe, blink), a 0–100 fidelity score per variant, face params, a rig and animation clips. It ships with a sample character, Captain Kite (CC0), a pack format for your own characters, a command line, Agent Skills, plugins for Claude Code and Codex, and an MCP server.
+
+Repository: https://github.com/CharacterLab/CharacterLab
+
+## Docs
+
+- [README](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/README.md): what it is, quick start, features, a tour of the lab, the guide and the FAQ
+- [Quick start](https://github.com/CharacterLab/CharacterLab#quick-start): install and run (`npm ci`, `npm start`, then http://localhost:8765/)
+- [Features](https://github.com/CharacterLab/CharacterLab#features): the full list of what the lab does
+- [FAQ](https://github.com/CharacterLab/CharacterLab#9-faq): what it is, how the score is computed, GPU and API key, license
+- [Guide: make your own character](https://github.com/CharacterLab/CharacterLab#4-guide-make-your-own-character): a step-by-step pack, using examples/blob
+- [Command line reference](https://github.com/CharacterLab/CharacterLab#7-command-line-reference): score, sheet, shot, film, board
+- [Pack format](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/packs/README.md): every field of pack.json and registerCharacter
+- [AGENTS.md](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/AGENTS.md): instructions for AI coding agents working in the repo
+- [CONTRIBUTING.md](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/CONTRIBUTING.md): how to help
+
+## Agent skills
+
+- [character-lab](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/skills/character-lab/SKILL.md): install, start and open the lab
+- [create-character](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/skills/create-character/SKILL.md): make a character pack from pictures
+- [draw-character](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/skills/draw-character/SKILL.md): improve a drawing in code against its picture
+- [animate-character](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/skills/animate-character/SKILL.md): face expressions, a rig of parts and animation clips
+- [pack-format](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/skills/pack-format/SKILL.md): the pack format
+
+## Optional
+
+- [Captain Kite pack](https://github.com/CharacterLab/CharacterLab/tree/main/packs/captain-kite): the sample character, code and six reference sheets (CC0)
+- [Blob example](https://github.com/CharacterLab/CharacterLab/tree/main/examples/blob): the smallest working character
+- [MCP server](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/mcp/tools.mjs): tools lab_start, lab_status, list_characters, create_character, score, compare, film
+- [License](https://raw.githubusercontent.com/CharacterLab/CharacterLab/main/LICENSE): MIT
