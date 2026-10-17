@@ -40,7 +40,7 @@ both; if one is missing, tell the user what to install rather than installing sy
 ```bash
 npm ci
 npm test                    # must pass before and after your change
-npm run lab -- score        # every variant's score; Captain Kite's mean is about 82.7
+npm run lab -- score        # every variant's score; Captain Kite's mean is 81.4 (SwiftShader, Chrome 155)
 npm start                   # in the background; give the user http://localhost:8765/lab/
 ```
 
