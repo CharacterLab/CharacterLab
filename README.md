@@ -5,15 +5,51 @@
   </picture>
 </h1>
 
-**Draw characters in code, and measure how close you got.**
+Draw characters in code, and measure how close you got.
 
-Character Lab is a small lab for characters that are drawn entirely by code: outlines, materials and a rig rendered
-by a WebGL2 renderer, with no images used at render time. Every part of a character is checked against a reference
-sheet, side by side, with a score, so you can tell whether a change to the drawing actually helped.
+Character Lab is an open-source (MIT) lab for drawing 2D characters entirely in code, with a WebGL2 renderer and no
+images at render time, and scoring each drawing part by part against its reference picture. It is for developers,
+technical artists and AI coding agents (Claude Code, Codex and others) who want to turn a character sheet into code.
+It runs locally with Node.js and Google Chrome: the painted sheet sits next to the live code drawing, and after each
+change to the code a 0–100 fidelity score shows whether the drawing got closer.
 
 ![The lab's home: create a new character or try the sample](docs/images/home.png)
 
 It ships with one example character, **Captain Kite**, whose code and sheets you're free to use.
+
+## Quick start
+
+```bash
+git clone https://github.com/CharacterLab/CharacterLab.git
+cd CharacterLab
+npm ci
+npm start                # open http://localhost:8765/
+```
+
+Needs **Node.js 22.12+** and, for command-line scoring, **Google Chrome**. In Claude Code, add it as a plugin instead:
+`/plugin marketplace add CharacterLab/CharacterLab` then `/plugin install character-lab@character-lab`. More in
+[Install and run](#1-install-and-run).
+
+## Features
+
+- **Characters drawn only in code**: a WebGL2 renderer (no libraries) draws layers of SDF shapes with materials
+  (painted wash, soft pools, cel, eyes, blush, halos, strokes). No images are used at render time.
+- **The sheet next to the code**: the lab shows the reference painting beside the live WebGL drawing, by part
+  (whole figure, parts, expressions, poses) and variant.
+- **Five compare modes**: side by side, onion, difference, wipe and blink.
+- **A fidelity score (0–100) per variant**, from silhouette, landmarks, palette, feature shapes, structure (SSIM) and
+  texture. Save a baseline, change the code, and compare per variant.
+- **Faces, rigs and clips**: face params (eyes, lids, gaze, brows, mouth, blush) as presets and sliders in the lab, a
+  rig of parts, and clips such as a wave, shown as a filmstrip.
+- **New character page**: drop in pictures, check the figure box it finds, and get a pack with a placeholder drawing
+  and its first score (also `npm run new-pack`).
+- **A pack format** for your own characters, with a checker (`checkPack`), packs kept in any folder or private repo,
+  and custom GLSL materials and draw modes per pack.
+- **A command line** for scores, painting | code | difference images, screenshots and filmstrips, in headless Chrome.
+- **Made for AI agents**: plugins for Claude Code and Codex, five Agent Skills and an MCP server (`lab_start`,
+  `lab_status`, `list_characters`, `create_character`, `score`, `compare`, `film`).
+- **A sample character, Captain Kite** (26 variants over six reference sheets, a rig and two clips), and a minimal
+  tutorial character, Blob. Both are CC0.
 
 ## Get started: just ask your agent
 
@@ -63,13 +99,13 @@ Or press **Try the sample** to look around with Captain Kite:
 
 ![The lab: the reference sheet on the left, the character drawn in code on the right](docs/images/lab.png)
 
-See [Quick start](#1-quick-start) to run it without an agent.
+See [Install and run](#1-install-and-run) to run it without an agent.
 
 ---
 
 ## Contents
 
-1. [Quick start](#1-quick-start)
+1. [Install and run](#1-install-and-run)
 2. [A tour of the lab](#2-a-tour-of-the-lab)
 3. [Meet Captain Kite](#3-meet-captain-kite)
 4. [Guide: make your own character](#4-guide-make-your-own-character)
@@ -77,11 +113,12 @@ See [Quick start](#1-quick-start) to run it without an agent.
 6. [Give a character its own look](#6-give-a-character-its-own-look)
 7. [Command line reference](#7-command-line-reference)
 8. [Folder map](#8-folder-map)
-9. [License](#9-license)
+9. [FAQ](#9-faq)
+10. [License](#10-license)
 
 ---
 
-## 1. Quick start
+## 1. Install and run
 
 You need **Node.js 22.12+** and, for command-line scoring, **Google Chrome** (set `CHROME=/path/to/chrome` if it isn't in
 the usual place).
@@ -356,7 +393,33 @@ tests/                server, config, pack API, loader and renderer tests
 
 ---
 
-## 9. License
+## 9. FAQ
+
+**What is Character Lab?**
+An open-source (MIT) local lab for drawing 2D characters in code with WebGL2 and measuring how close each drawing is to
+its reference picture. It shows the painting and the code drawing side by side, scores every part, and comes with a
+pack format, a command line, Agent Skills and an MCP server so AI agents can do the drawing.
+
+**How is the score computed?**
+For each variant, the code drawing and the crop of the reference sheet are compared pixel by pixel in the browser
+(`lab/js/wc-compare.js`). The fidelity score (0–100) is a weighted sum: 30% landmarks (by default, and for every pack in
+this repo, the silhouette overlap again), 25% silhouette overlap (IoU of the inked pixels), 15% palette (from the CIE76 colour distance,
+ΔE, on a coarse grid), 10% feature shapes (overlap of the dark, pink and saturated areas), 10% structure (SSIM of the
+brightness) and 10% texture (local contrast and edges, region by region). Scores can differ a little between machines
+and WebGL renderers, so compare a change against a baseline taken on the same machine.
+
+**Does it need a GPU or an API key?**
+No API key: the lab itself calls no AI service, and its server listens only on your computer (`127.0.0.1`). The pages
+load their web fonts from Google Fonts. The command line drives headless Chrome with WebGL: Metal on macOS, SwiftShader
+software rendering on Linux, so a GPU isn't required there. Your agent may use its own tools (for example image
+generation) when you ask it to make a reference picture.
+
+**What license is it under?**
+The code is MIT. The Captain Kite pack and the Blob example, code and sheets, are CC0.
+
+---
+
+## 10. License
 
 The code is **MIT** (`LICENSE`). The Captain Kite pack and the Blob example, code and sheets, are **CC0**
 (`packs/captain-kite/LICENSE`, `examples/blob/LICENSE`). See `CONTRIBUTING.md` to help out.

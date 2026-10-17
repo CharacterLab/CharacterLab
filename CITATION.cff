@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use Character Lab, please cite it as below."
+title: "Character Lab"
+abstract: "Draw characters in code, and measure how close you got. A local lab that draws 2D characters in code with a WebGL2 renderer and scores each drawing part by part against its reference picture."
+type: software
+authors:
+  - given-names: Daniel
+    family-names: Garcia Acosta
+    alias: coolxeo
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/CharacterLab/CharacterLab"
+url: "https://github.com/CharacterLab/CharacterLab"
+keywords:
+  - character-design
+  - webgl2
+  - procedural-graphics
+  - image-comparison
+  - claude-code
+  - mcp
