@@ -1,12 +1,14 @@
 // The lab's local server: the home page, the lab's pages (lab/), the character packs it finds (lab-config.mjs) at
-// /packs/<id>/ with their manifest at /packs.json, and any extra folders lab.config.json mounts. Read-only, browser
-// assets only, loopback only. `npm start` runs it; the command line (lab/scripts/wc-lab.mjs) runs its own copy.
+// /packs/<id>/ with their manifest at /packs.json, and any extra folders lab.config.json mounts. Browser assets only,
+// loopback only, read-only but for one write: POST /api/characters makes a new pack (lab-api.mjs). `npm start` runs
+// it; the command line (lab/scripts/wc-lab.mjs) runs its own copy.
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {sep} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {mountTypes, readMounted, resolveMount} from './static-mounts.js';
 import {findPacks, publicManifest, readConfig} from './lab-config.mjs';
+import {createCharacter} from './lab-api.mjs';
 
 const root = new URL('./', import.meta.url);
 // The only file served from the lab's root: server code, tests, package files and dotfiles never are.
@@ -44,6 +46,11 @@ export function createLabServer({config = readConfig(), mounts = null} = {}) {
       const host = req.headers.host || '';
       if (!/^(localhost|127\.0\.0\.1):\d+$/.test(host)) return send(res, 403, {error: 'Invalid local host.'});
       const url = new URL(req.url, `http://${host}`);
+      if (url.pathname === '/api/characters') {
+        if (req.method === 'POST') return await createCharacter(req, res, {config: await cfg, host, send});
+        res.setHeader('Allow', 'POST');
+        return send(res, 405, {error: 'Use POST.'});
+      }
       if (!['GET', 'HEAD'].includes(req.method)) return send(res, 405, {error: 'Use GET.'});
       const headers = type => ({'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'});
       const redirect = (location, status = 301) => { res.writeHead(status, {Location: location}); res.end(); };
