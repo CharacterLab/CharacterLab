@@ -4,10 +4,10 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import vm from 'node:vm';
-import { checkPack } from '../studio/scripts/lab-vm.mjs';
+import { checkPack } from '../lab/scripts/lab-vm.mjs';
 
-// The registration API (studio/js/lab-packs.js), the pack loader of the pages (studio/js/lab-loader.js) and the
-// check every pack's own tests run (studio/scripts/lab-vm.mjs checkPack). The packs themselves are tested in their
+// The registration API (lab/js/lab-packs.js), the pack loader of the pages (lab/js/lab-loader.js) and the
+// check every pack's own tests run (lab/scripts/lab-vm.mjs checkPack). The packs themselves are tested in their
 // folders (packs/<id>/tests/); nothing here needs one.
 const LAB = new URL('../', import.meta.url);
 const PAGES = ['index.html', 'score.html', 'inspect.html', 'anim.html', 'bake.html'];
@@ -18,7 +18,7 @@ async function page(extra = {}) {
   const ctx = vm.createContext(Object.assign({ console }, extra));
   ctx.window = ctx;
   const run = async (url, filename) => vm.runInContext(await readFile(url, 'utf8'), ctx, { filename });
-  for (const f of ['lab-geom.js', 'wc-gl.js', 'wc-parts.js', 'wc-rig.js', 'wc-anim.js', 'wc-expressions.js', 'lab-packs.js']) await run(new URL(`studio/js/${f}`, LAB), f);
+  for (const f of ['lab-geom.js', 'wc-gl.js', 'wc-parts.js', 'wc-rig.js', 'wc-anim.js', 'wc-expressions.js', 'lab-packs.js']) await run(new URL(`lab/js/${f}`, LAB), f);
   return { CharacterLab: ctx.CharacterLab, run, ctx };
 }
 const api = async () => (await page()).CharacterLab;
@@ -26,7 +26,7 @@ const part = (id) => ({ id, label: id, variants: [] });
 
 test('every page loads the packs through the loader, after the pack API and before the catalog', async () => {
   for (const name of PAGES) {
-    const html = await readFile(new URL(`studio/${name}`, LAB), 'utf8');
+    const html = await readFile(new URL(`lab/${name}`, LAB), 'utf8');
     const srcs = [...html.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]);
     const at = (s) => srcs.indexOf(s);
     assert.ok(at('js/lab-packs.js') >= 0 && at('js/lab-loader.js') > at('js/lab-packs.js') && at('js/wc-elements.js') > at('js/lab-loader.js'), `${name}: lab-packs.js, lab-loader.js, wc-elements.js`);
@@ -34,14 +34,14 @@ test('every page loads the packs through the loader, after the pack API and befo
   }
 });
 
-test('the studio ships only neutral icons; a pack brings its own (pack.json "icon", "icons")', async () => {
-  const html = await readFile(new URL('studio/index.html', LAB), 'utf8');
+test('the lab ships only neutral icons; a pack brings its own (pack.json "icon", "icons")', async () => {
+  const html = await readFile(new URL('lab/index.html', LAB), 'utf8');
   const symbols = [...html.matchAll(/<symbol id="i-([a-z-]+)"/g)].map((m) => m[1]);
   assert.ok(symbols.includes('figure'), 'the neutral default icon');
   const NEUTRAL = ['figure', 'head', 'eye', 'nose', 'mouth', 'cheeks', 'brow', 'clump', 'fringe', 'strip', 'shell', 'body', 'arm', 'foot',
     'side', 'onion', 'diff', 'wipe', 'blink', 'play', 'pause', 'panel'];
   assert.deepEqual(symbols.filter((s) => !NEUTRAL.includes(s)), [], 'only the neutral set');
-  const lab = await readFile(new URL('studio/js/wc-lab.js', LAB), 'utf8');
+  const lab = await readFile(new URL('lab/js/wc-lab.js', LAB), 'utf8');
   assert.match(lab, /\(p\.icons \|\| \{\}\)\[name\] \|\| \(sprite\(name\) \? null : p\.icon\)/);
 });
 
@@ -53,7 +53,7 @@ async function runLoader(answer) {
     send() { if (answer instanceof Error) throw answer; this.status = answer.status ?? 200; this.responseText = JSON.stringify(answer.body ?? answer); }
   }
   const { CharacterLab, run } = await page({ XMLHttpRequest, document: { write: (h) => written.push(h) }, console: { warn: (...a) => warnings.push(a.join(' ')) } });
-  await run(new URL('studio/js/lab-loader.js', LAB), 'lab-loader.js');
+  await run(new URL('lab/js/lab-loader.js', LAB), 'lab-loader.js');
   return { CharacterLab, written, warnings };
 }
 
@@ -170,7 +170,7 @@ test('registerCharacter refuses a bad definition', async () => {
   assert.throws(reg({ id: 'pip', label: 'Pip', parts: [part('a')] }), /registered twice/);
 });
 
-test('registerCharacter takes a face, a rig, clips and the studio settings, and the engine reads them', async () => {
+test('registerCharacter takes a face, a rig, clips and the lab settings, and the engine reads them', async () => {
   const CharacterLab = await api();
   const build = (p) => ({ ops: [], world: [10, 10], p });
   CharacterLab.lab.registerCharacter({ id: 'pip', label: 'Pip', parts: [part('pip')],
@@ -178,7 +178,7 @@ test('registerCharacter takes a face, a rig, clips and the studio settings, and 
       mouths: { o: 'O', grin: 'Grin' }, build, sliders: [['beam', 'Beam', 0, 1]], rest: { lid: 0, beam: 0 } },
     rig: { parts: ['body', 'cap'] },
     clips: [{ id: 'pip-bob', dur: 1, p: { lid: [[0, 0], [1, 1]] }, pose: { cap: { dy: [[0, 0], [1, -2]] } } }],
-    studio: { zooms: { front: { full: [0, 0, 10, 10] } }, layers: ['cap'], follow: { centre: [5, 5], reach: 4, layer: () => ({ p: {}, pose: {} }) } },
+    lab: { zooms: { front: { full: [0, 0, 10, 10] } }, layers: ['cap'], follow: { centre: [5, 5], reach: 4, layer: () => ({ p: {}, pose: {} }) } },
     sheetUrl: (file) => (file.startsWith('pip-') ? `/sheets/pip/${file}` : null) });
   const X = CharacterLab.wcExpressions;
   assert.deepEqual(plain(X.params('happy', { lid: 1 })), { mouth: 'grin', lid: 1 });
@@ -190,13 +190,13 @@ test('registerCharacter takes a face, a rig, clips and the studio settings, and 
   assert.equal(CharacterLab.wcAnim.clips['pip-bob'].character, 'pip');
   assert.equal(CharacterLab.wcAnim.clips['pip-bob'].usesLids, true);
   assert.deepEqual(plain(CharacterLab.wcAnim.sample('pip-bob', 0).p), {}, 'a param at its rest value is left out of the frame');
-  assert.equal(CharacterLab.lab.firstWith('studio').id, 'pip');
+  assert.equal(CharacterLab.lab.firstWith('lab').id, 'pip');
   assert.equal(CharacterLab.lab.sheetUrl('pip-front.png'), '/sheets/pip/pip-front.png');
   assert.equal(CharacterLab.lab.sheetUrl('/abs/a.png'), '/abs/a.png');
   assert.equal(CharacterLab.lab.sheetUrl('other.png'), 'other.png');
 });
 
-test('registerCharacter refuses a bad face, rig, clip or studio, and registers nothing then', async () => {
+test('registerCharacter refuses a bad face, rig, clip or lab settings, and registers nothing then', async () => {
   const CharacterLab = await api();
   const reg = (extra) => () => CharacterLab.lab.registerCharacter(Object.assign({ id: 'pip', label: 'Pip', parts: [part('a')] }, extra));
   assert.throws(reg({ expressions: { presets: { a: { p: {} } } } }), /needs a label and params p/);
@@ -206,8 +206,8 @@ test('registerCharacter refuses a bad face, rig, clip or studio, and registers n
   assert.throws(reg({ clips: [{ id: 'x' }] }), /needs an id and dur > 0/);
   assert.throws(reg({ clips: [{ id: 'x', dur: 1 }, { id: 'x', dur: 1 }] }), /clip id "x" is taken/);
   assert.throws(reg({ rig: { parts: ['body'] }, clips: [{ id: 'x', dur: 1, pose: { tail: { rot: 1 } } }] }), /moves "tail"/);
-  assert.throws(reg({ studio: { zooms: { front: { full: [0, 0, 1] } } } }), /studio.zooms/);
-  assert.throws(reg({ studio: { layers: [1] } }), /studio.layers/);
+  assert.throws(reg({ lab: { zooms: { front: { full: [0, 0, 1] } } } }), /lab.zooms/);
+  assert.throws(reg({ lab: { layers: [1] } }), /lab.layers/);
   assert.throws(reg({ sheetUrl: 'x' }), /sheetUrl must be a function/);
   assert.deepEqual(plain(CharacterLab.lab.characterIds()), []);
   assert.equal(CharacterLab.WC_CHARACTERS, undefined);

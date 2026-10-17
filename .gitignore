@@ -5,5 +5,5 @@ out/
 # your own pack folders and mounts (copy lab.config.example.json)
 lab.config.json
 # inspect.html?baseline=1 copies an earlier renderer here
-studio/_baseline/
+lab/_baseline/
 .DS_Store

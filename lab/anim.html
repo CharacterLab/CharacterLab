@@ -25,18 +25,18 @@
 <script src="js/wc-elements.js"></script>
 <script>
 // Animation clips as filmstrips: frames of a clip side by side, drawn exactly (every part moved by its matrix:
-// CharacterLab.wcRig.flatten), or through the studio's layered renderer (&rig=1) to compare the two.
+// CharacterLab.wcRig.flatten), or through the lab's layered renderer (&rig=1) to compare the two.
 //   anim.html?clip=nod                 one clip, 8 frames across its length (a loop: across one cycle)
 //   anim.html?group=eyes               every clip of a group, one row each (&frames=6)
 //   &frames=8 &h=260                   frames per clip, frame height in pixels
 //   &zoom=x,y,w,h                      a box of the figure (model units); default the whole figure; or a name the
-//                                      character's pack gives (studio.filmZooms, e.g. zoom=face, zoom=head)
+//                                      character's pack gives (lab.filmZooms, e.g. zoom=face, zoom=head)
 //   &v=<variant id>                    the variant (a whole figure, a standing figure, an expression head: anything
 //                                      rigged); default the first rigged view of the default character
 //   &p={"mouth":"cat"}                 base face params under the clip
 //   &fps=24                            frames at this rate across the clip (instead of &frames), for videos
 //   &cols=8 &labels=0                  frames wrapped into rows of 8, without the labels (a clean grid to cut up)
-//   &idle=1                            the studio's idle layer (blinks, breath) under the clip
+//   &idle=1                            the lab's idle layer (blinks, breath) under the clip
 (async function () {
   const CharacterLab = window.CharacterLab, E = CharacterLab.wcElements, A = CharacterLab.wcAnim, R = CharacterLab.wcRig;
   const qs = new URLSearchParams(location.search), out = document.getElementById("out");
@@ -44,7 +44,7 @@
     const rigged = (v) => { if (!v.build) return false; const s = v.build({}); return !!(s && s.rig && s.rig.def); };
     const all = E.parts.flatMap((p) => p.variants);
     const vv = qs.get("v") ? all.find((v) => v.id === qs.get("v")) : E.parts.filter((p) => p.whole).flatMap((p) => p.variants).find(rigged);
-    const own = CharacterLab.lab.character(vv ? E.part(vv.part).character : null), ZOOM = Object.assign({ full: null }, own && own.studio && own.studio.filmZooms);
+    const own = CharacterLab.lab.character(vv ? E.part(vv.part).character : null), ZOOM = Object.assign({ full: null }, own && own.lab && own.lab.filmZooms);
     if (!E.parts.length) throw new Error("no character packs found; see packs/README.md");
     if (!vv || !vv.build) throw new Error(qs.get("v") ? "no such variant: " + qs.get("v") : "no rigged whole figure to film");
     const base = JSON.parse(qs.get("p") || "{}");

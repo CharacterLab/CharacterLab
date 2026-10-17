@@ -1,4 +1,4 @@
-// Character packs: how a character joins the studio. A pack is a folder with a pack.json (id, label, license, the
+// Character packs: how a character joins the lab. A pack is a folder with a pack.json (id, label, license, the
 // scripts the pages load, in order: ../packs/README.md) and scripts that end with one call:
 //
 //   CharacterLab.lab.registerCharacter({
@@ -12,20 +12,20 @@
 //       build: (p) => scene, sliders: [[param, label, min, max], …], rest: { param: value at rest, … } },
 //     rig: { parts: ["body", "head", …] },                // the rig parts a clip may move (scene.rig.def names them)
 //     clips: [clip, …],                                   // animations (js/wc-anim.js: the clip format)
-//     studio: { zooms: { "<variant id>": { full: [x, y, w, h], … } }, layers: ["body", …],
-//       follow: { centre: [x, y], reach, layer: (gaze) => ({ p, pose }) },   // the studio's zooms, layer toggles,
+//     lab: { zooms: { "<variant id>": { full: [x, y, w, h], … } }, layers: ["body", …],
+//       follow: { centre: [x, y], reach, layer: (gaze) => ({ p, pose }) },   // the lab's zooms, layer toggles,
 //       filmZooms: { face: [x, y, w, h], … } },          // what the eyes-follow switch moves, anim.html's zooms
 //     sheetUrl: (file) => url | null,                     // optional: where a sheet file without a sheetsBase lives
 //   });
 //
 // Sheet keys are global, so a pack prefixes them with its id (or with its own prefix: prefix: "c2d-"). The first
-// character registered is the studio's default. A part's character defaults to the pack's id. Packs load after the
+// character registered is the lab's default. A part's character defaults to the pack's id. Packs load after the
 // engine (geometry, renderer, scoring, parts, rig, clips, expressions, this file) and before js/wc-elements.js, which
 // reads what they registered. Nothing is registered unless the whole definition is valid.
 (function () {
   const CharacterLab = (window.CharacterLab = window.CharacterLab || {});
   const ID = /^[a-z][a-z0-9-]*$/;
-  const registry = new Map();   // id -> { id, label, icon, expressions, rig, studio, sheetUrl }
+  const registry = new Map();   // id -> { id, label, icon, expressions, rig, lab, sheetUrl }
 
   function fail(id, msg) { throw new Error(`character pack "${id}": ${msg}`); }
   const isObj = (x) => !!x && typeof x === "object" && !Array.isArray(x);
@@ -53,14 +53,14 @@
     }
     if (clips.length && !CharacterLab.wcAnim) fail(id, "clips need js/wc-anim.js loaded before the packs");
   }
-  function checkStudio(id, s) {
-    if (!isObj(s)) fail(id, "studio must be an object");
+  function checkLabSettings(id, s) {
+    if (!isObj(s)) fail(id, "lab must be an object");
     if (s.zooms != null && !(isObj(s.zooms) && Object.values(s.zooms).every((z) => isObj(z) && Object.values(z).every((b) => Array.isArray(b) && b.length === 4 && b.every(Number.isFinite)))))
-      fail(id, "studio.zooms must map variant ids to { name: [x, y, w, h] }");
+      fail(id, "lab.zooms must map variant ids to { name: [x, y, w, h] }");
     if (s.filmZooms != null && !(isObj(s.filmZooms) && Object.values(s.filmZooms).every((b) => Array.isArray(b) && b.length === 4 && b.every(Number.isFinite))))
-      fail(id, "studio.filmZooms must map names to [x, y, w, h]");
-    if (s.layers != null && !strings(s.layers)) fail(id, "studio.layers must be a list of layer names");
-    if (s.follow != null && !(isObj(s.follow) && (s.follow.layer == null || isFn(s.follow.layer)))) fail(id, "studio.follow must be { centre, reach, layer }");
+      fail(id, "lab.filmZooms must map names to [x, y, w, h]");
+    if (s.layers != null && !strings(s.layers)) fail(id, "lab.layers must be a list of layer names");
+    if (s.follow != null && !(isObj(s.follow) && (s.follow.layer == null || isFn(s.follow.layer)))) fail(id, "lab.follow must be { centre, reach, layer }");
   }
   function check(def) {
     if (!def || typeof def !== "object") throw new Error("registerCharacter needs a character definition");
@@ -84,7 +84,7 @@
     if (def.expressions != null) checkExpressions(id, def.expressions);
     if (def.rig != null && !(isObj(def.rig) && strings(def.rig.parts) && def.rig.parts.length)) fail(id, "rig needs a list of part names (rig.parts)");
     if (def.clips != null) checkClips(id, def.clips, def.rig && def.rig.parts);
-    if (def.studio != null) checkStudio(id, def.studio);
+    if (def.lab != null) checkLabSettings(id, def.lab);
     if (def.sheetUrl != null && !isFn(def.sheetUrl)) fail(id, "sheetUrl must be a function");
   }
 
@@ -101,13 +101,13 @@
     CharacterLab.WC_EXTRA_MASKS = Object.assign({}, CharacterLab.WC_EXTRA_MASKS, masks);
     CharacterLab.WC_CHARACTERS = [...(CharacterLab.WC_CHARACTERS || []), Object.assign({ id, label }, icon ? { icon } : {})];
     CharacterLab.WC_EXTRA_PARTS = [...(CharacterLab.WC_EXTRA_PARTS || []), ...parts.map((p) => owned(id, p))];
-    registry.set(id, Object.freeze({ id, label, icon, expressions: def.expressions || null, rig: def.rig || null, studio: def.studio || null, sheetUrl: def.sheetUrl || null }));
+    registry.set(id, Object.freeze({ id, label, icon, expressions: def.expressions || null, rig: def.rig || null, lab: def.lab || null, sheetUrl: def.sheetUrl || null }));
     // clips last: adding one samples it, which needs the character's expressions (their rest values) registered
     if (def.clips && def.clips.length) CharacterLab.wcAnim.add(def.clips.map((c) => Object.assign({ character: id }, c)));
   }
 
   const characters = () => [...registry.values()];
-  // The first character registered that defines `key` (the studio's default expressions, zooms…), or null.
+  // The first character registered that defines `key` (the lab's default expressions, zooms…), or null.
   const firstWith = (key) => characters().find((c) => c[key]) || null;
   // A sheet file as a URL: an absolute path or URL as it is, else the first pack that knows the file, else the file.
   function sheetUrl(file) {

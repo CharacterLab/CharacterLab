@@ -4,7 +4,7 @@
   const CharacterLab = window.CharacterLab;
   const C = CharacterLab.wcCompare, E = CharacterLab.wcElements;
   const $ = (s) => document.querySelector(s);
-  // An icon: one the character's pack ships (pack.json "icons" by name, else its "icon"), else the studio's own symbol
+  // An icon: one the character's pack ships (pack.json "icons" by name, else its "icon"), else the lab's own symbol
   // of that name, else the neutral figure.
   const SVG = /^(?!.*(^|\/)\.)[\w./-]+\.svg$/;
   const sprite = (name) => !!name && /^[a-z][a-z0-9-]*$/.test(name) && !!document.getElementById("i-" + name);
@@ -18,14 +18,14 @@
   // What the character packs bring (js/lab-packs.js): the default character's (the first one that has them) zooms of
   // its whole-figure views (in each view's traced world), layer toggles and gaze; the face's presets, mouths and the
   // sliders of its continuous params (js/wc-expressions.js: [param, label, min, max], 0 is rest for each).
-  const studio = (key) => { const c = CharacterLab.lab.firstWith("studio"); return (c && c.studio[key]) || null; };
-  const ZOOMS = studio("zooms") || {};
+  const labSetting = (key) => { const c = CharacterLab.lab.firstWith("lab"); return (c && c.lab[key]) || null; };
+  const ZOOMS = labSetting("zooms") || {};
   const ZOOM_NAMES = [...new Set(Object.values(ZOOMS).flatMap((z) => Object.keys(z)))];
   const EXPR = CharacterLab.wcExpressions.presets;
   const FACE_SLIDERS = CharacterLab.wcExpressions.sliders;
   const MODES = [["render", "side", "Side by side"], ["onion", "onion", "Onion"], ["diff", "diff", "Difference"], ["wipe", "wipe", "Wipe"], ["blink", "blink", "Blink"]];
-  const LAYERS = studio("layers") || [];
-  const FOLLOW = studio("follow") || {};
+  const LAYERS = labSetting("layers") || [];
+  const FOLLOW = labSetting("follow") || {};
 
   const A = CharacterLab.wcAnim, RIG = CharacterLab.wcRig;   // js/wc-anim.js (clips), js/wc-rig.js (parts and layers)
   const st = { char: null, part: null, variant: null, view: "render", wipe: 0.5, onion: 0.5, speed: 1, playing: false,
@@ -46,7 +46,7 @@
   // Eyes follow the pointer: the gaze eases toward it (the eyes lead, the head turns a little after them, the ears
   // shift the other way), and back to the middle when it leaves the picture.
   let pointer = null, gaze = { x: 0, y: 0, t: null };
-  // The pack says where the face's centre is, how far the gaze reaches and what the gaze moves (studio.follow).
+  // The pack says where the face's centre is, how far the gaze reaches and what the gaze moves (lab.follow).
   function followLayer(t) {
     const [cx, cy] = FOLLOW.centre || [cur.frame[2] / 2, cur.frame[3] / 3], reach = FOLLOW.reach || 70;
     const want = pointer ? { x: Math.max(-1, Math.min(1, (pointer[0] - cx) / reach)), y: Math.max(-1, Math.min(1, (pointer[1] - cy) / reach)) } : { x: 0, y: 0 };
@@ -321,7 +321,7 @@
     requestAnimationFrame(() => render(st.playing ? animT : null));
   }
 
-  // No character packs: the studio says where they come from instead of drawing.
+  // No character packs: the lab says where they come from instead of drawing.
   function empty() {
     document.title = "Character Lab · no characters";
     $("#char-name").textContent = "No characters";

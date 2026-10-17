@@ -55,7 +55,7 @@ test('lab.config.json and LAB_PACKS add pack folders (relative to the lab) and m
 test('a broken lab.config.json is an error, not an empty config', async () => {
   for (const [config, message] of [['{ nope', /lab.config.json/], [{ packs: '../cast' }, /"packs" must be a list/],
     [{ mounts: { 'sheets/': '../x' } }, /bad mount prefix/], [{ mounts: { '/packs/': '../x' } }, /bad mount prefix/],
-    [{ mounts: { '/studio/': '../x' } }, /bad mount prefix/], [{ mounts: { '/x/': '' } }, /needs a folder/], [[], /must be an object/]]) {
+    [{ mounts: { '/lab/': '../x' } }, /bad mount prefix/], [{ mounts: { '/x/': '' } }, /needs a folder/], [[], /must be an object/]]) {
     const lab = await tree({ 'lab.config.json': typeof config === 'string' ? config : JSON.stringify(config) });
     await assert.rejects(readConfig({ labDir: lab, env: {} }), message, JSON.stringify(config));
   }
@@ -129,16 +129,16 @@ test('the server lists the packs it found and serves each one read-only at /pack
   assert.equal(folder.headers.get('location'), '/packs/pip/sheets/');
 });
 
-test('with no packs at all the server answers an empty manifest and the studio page still loads', async (t) => {
+test('with no packs at all the server answers an empty manifest and the lab page still loads', async (t) => {
   const { server, base } = await serve({ packDirs: [join(await tree({ 'x.txt': '' }), 'packs')], mounts: {} });
   t.after(() => server.close());
   assert.deepEqual(await (await fetch(`${base}/packs.json`)).json(), { packs: [], problems: 0 });
-  for (const path of ['/studio/', '/studio/js/lab-loader.js', '/studio/js/wc-lab.js', '/']) assert.equal((await fetch(`${base}${path}`)).status, 200, path);
+  for (const path of ['/lab/', '/lab/js/lab-loader.js', '/lab/js/wc-lab.js', '/']) assert.equal((await fetch(`${base}${path}`)).status, 200, path);
 });
 
-test('the studio shows an empty state when no pack registered a character', async () => {
+test('the lab shows an empty state when no pack registered a character', async () => {
   const { readFile } = await import('node:fs/promises');
-  const js = await readFile(new URL('../studio/js/wc-lab.js', import.meta.url), 'utf8');
+  const js = await readFile(new URL('../lab/js/wc-lab.js', import.meta.url), 'utf8');
   assert.match(js, /if \(!E\.parts\.length\) return empty\(\);/);
   assert.match(js, /No character packs found; see <code>packs\/README\.md<\/code>/);
 });

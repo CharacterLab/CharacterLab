@@ -1,9 +1,9 @@
-// The studio's scripts in a node vm, without a browser, in the pages' order (js/lab-loader.js): the engine, then every
+// The lab's scripts in a node vm, without a browser, in the pages' order (js/lab-loader.js): the engine, then every
 // pack's renderer extensions (*-gl.js), then the packs' other scripts (each pack.json's order), then the catalog. A
 // pack's requirements (pack.json "requires") are found next to it and loaded first. The builders only make ops, so
 // tests can check them without a GPU (the extensions only register GLSL text).
 //   const CharacterLab = await loadLab({ packs: [new URL('../', import.meta.url)] });   // a pack's own tests
-//   loadLab({ packs, before, after })   before / after: engine scripts (file names in studio/js/) around the packs
+//   loadLab({ packs, before, after })   before / after: engine scripts (file names in lab/js/) around the packs
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';

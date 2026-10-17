@@ -1,5 +1,5 @@
 // The clip engine: clips move a character's face (its face params: js/wc-expressions.js) and its rig (p.pose:
-// js/wc-rig.js; the parts and pivots come with the character's scene) over time. The studio plays them (js/wc-lab.js:
+// js/wc-rig.js; the parts and pivots come with the character's scene) over time. The lab plays them (js/wc-lab.js:
 // the Animations panel), `npm run lab -- film --clip=<id>` draws them as filmstrips (anim.html). A character pack
 // brings its clips through registerCharacter's `clips` and the parts they may move through its `rig` (js/lab-packs.js).
 //
@@ -15,7 +15,7 @@
 //
 // Mixing (mix): the clip over the idle layer (blink, breath): the clip's params win; pose channels add (rot, dx, dy)
 // or multiply (sx, sy). A face param at its rest value (lid 0, look 0, eyes "open"…) is left out of a clip's frame, so
-// the idle blink and the studio's own face show through while the clip is not using it (keepRest: true keeps them); the
+// the idle blink and the lab's own face show through while the clip is not using it (keepRest: true keeps them); the
 // rest values are the characters' (registerCharacter's expressions.rest). Units: the character's model units.
 (function () {
   const CharacterLab = (window.CharacterLab = window.CharacterLab || {});
@@ -74,7 +74,7 @@
     }
   }
   const isTrack = (v) => Array.isArray(v) && v.length && Array.isArray(v[0]);
-  // A face param at its rest value is left out of a clip's frame, so the idle blink and the studio's own face show
+  // A face param at its rest value is left out of a clip's frame, so the idle blink and the lab's own face show
   // through whenever the clip is not using it (a nod with lid 0 still blinks). A clip can keep them: keepRest: true.
   let REST = {}, restOf = -1;
   const restValues = () => {   // the characters' rest values, read again once another character registers
@@ -124,7 +124,7 @@
     for (const L of layers) { if (!L) continue; Object.assign(p, L.p || {}); pose = addPose(pose, L.pose); }
     return { p, pose };
   }
-  // The idle layer the studio plays under every clip: a blink now and then (a double one sometimes) and a slow breath.
+  // The idle layer the lab plays under every clip: a blink now and then (a double one sometimes) and a slow breath.
   const BLINKS = [3.1, 4.6, 2.4, 5.2, 3.7];   // seconds between blinks, repeating
   function blinkAt(t) {
     const cyc = BLINKS.reduce((a, b) => a + b, 0), ph = ((t % cyc) + cyc) % cyc;

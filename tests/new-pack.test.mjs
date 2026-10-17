@@ -6,12 +6,12 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { checkPack } from '../studio/scripts/lab-vm.mjs';
+import { checkPack } from '../lab/scripts/lab-vm.mjs';
 
 // `npm run new-pack`: a new pack outside the lab that checkPack accepts, with its sheet, test and crop.
 const LAB_DIR = fileURLToPath(new URL('../', import.meta.url));
 const SHEET = join(LAB_DIR, 'examples', 'blob', 'sheets', 'front.png');
-const run = (args) => spawnSync(process.execPath, ['studio/scripts/new-pack.mjs', ...args], { cwd: LAB_DIR, encoding: 'utf8' });
+const run = (args) => spawnSync(process.execPath, ['lab/scripts/new-pack.mjs', ...args], { cwd: LAB_DIR, encoding: 'utf8' });
 
 test('new-pack makes a pack that loads, with the figure box as its crop', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'new-pack-'));

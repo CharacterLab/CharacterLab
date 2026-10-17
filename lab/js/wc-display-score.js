@@ -1,6 +1,6 @@
 // Display-size accuracy for the Character Lab. The lab's score compares at the painting's own pixels,
 // so anything thinner than one of them averages away and never counts.
-// These metrics compare at the size the studio shows: our render drawn at that size beside the
+// These metrics compare at the size the lab shows: our render drawn at that size beside the
 // painting enlarged the same way.
 //   ssim    structural similarity of luminance, 8x8 windows every 4 px (1 = identical)
 //   edges   our gradient energy / the painting's, inside the figure (1 = same amount of edges)

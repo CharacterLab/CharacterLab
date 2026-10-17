@@ -4,7 +4,7 @@ This file is for AI code assistants (Claude Code, Codex, Cursor, …) working in
 here. People can read `README.md` instead.
 
 Character Lab draws characters in code (WebGL2) and scores each drawing against a reference picture. A character is a
-**pack**: a folder with `pack.json`, its scripts and its reference sheets. The engine lives in `studio/` and never
+**pack**: a folder with `pack.json`, its scripts and its reference sheets. The engine lives in `lab/` and never
 names a character.
 
 ## Install and check
@@ -14,13 +14,13 @@ look for Chrome in its usual place. If Chrome is somewhere else, set `CHROME=/pa
 tell the user what to install rather than installing system software yourself.
 
 If the user pasted a prompt from the README, it already says what they want: do it, then reply with what you made,
-the scores and the studio link.
+the scores and the lab link.
 
 ```bash
 npm ci
 npm test                    # must pass before and after your change
 npm run lab -- score        # every variant's score (headless Chrome); Captain Kite's mean is about 82.7
-npm start                   # http://localhost:8765/studio/ for the user to look at
+npm start                   # http://localhost:8765/lab/ for the user to look at
 ```
 
 `npm start` runs a server: start it in the background and give the user the URL.
@@ -60,7 +60,7 @@ Edit `packs/<id>/<id>.js`. `build(p)` returns `{ world, ops }`: draw ops in the 
   `CharacterLab.lab.geom.ellipse(cx, cy, rx, ry, rot)` or `spline(points, true)` through points you measured on the sheet.
 - **Material:** the cel material, `{ type: 8, ramp: [shadow, shadow, base, base], line, lineW, shadow, clean: true }`.
   Other op kinds and materials (`eye`, `blush`, `halo`, strokes, the painted wash) are documented at the top of
-  `studio/js/wc-gl.js`.
+  `lab/js/wc-gl.js`.
 - **Order:** backdrop first, then body, limbs, head, hair, then face details last.
 - **Measuring:** take every coordinate and colour from the sheet. Sample colours from flat regions; never guess them.
 
@@ -86,7 +86,7 @@ at a number.
 - **More views:** add another sheet to `sheets` and another variant with its own `frame` crop. Use one variant per
   expression or pose.
 - **Expressions:** read params in `build(p)`, e.g. `p.eyes === "closed"`, `p.mouth === "open"`. Add an `expressions`
-  block so the studio shows buttons and sliders.
+  block so the lab shows buttons and sliders.
 - **Animation:** add `rig` (the parts a clip may move) and `clips`, then preview with
   `npm run lab -- film --clip=<clip-id>`.
 
@@ -106,7 +106,7 @@ run with `npm test` the same way.
 
 ## Rules
 
-- **The engine stays generic.** Don't put character-specific code, names or colours in `studio/`. Everything about a
+- **The engine stays generic.** Don't put character-specific code, names or colours in `lab/`. Everything about a
   character goes in its pack. A look a pack needs that the engine lacks is a renderer extension (`*-gl.js`, see
   `packs/README.md`), not an engine edit.
 - **Draw, don't copy.** Never draw the reference image itself, or pixels or textures sampled from it, to raise a
@@ -122,7 +122,7 @@ run with `npm test` the same way.
 
 | Path | What |
 |------|------|
-| `studio/` | the engine: pages, `js/` (renderer `wc-gl.js`, pack API `lab-packs.js`, loader), `scripts/` (CLI `wc-lab.mjs`, `new-pack.mjs`) |
+| `lab/` | the engine: pages, `js/` (renderer `wc-gl.js`, pack API `lab-packs.js`, loader), `scripts/` (CLI `wc-lab.mjs`, `new-pack.mjs`) |
 | `packs/` | packs that ship with the lab; `packs/README.md` is the pack format |
 | `packs/captain-kite/` | the full example: several sheets, parts, expressions, poses, rig, clips |
 | `examples/blob/` | the smallest working pack (the README's guide) |

@@ -1,8 +1,8 @@
-// Face params: the plumbing between the studio (its expression buttons, mouth buttons and sliders), the clips
+// Face params: the plumbing between the lab (its expression buttons, mouth buttons and sliders), the clips
 // (js/wc-anim.js) and a character's face. A character pack brings its face through registerCharacter's `expressions`
 // (js/lab-packs.js): named presets of face params, the mouth shapes its face can draw, the sliders of its continuous
 // params, the params' rest values, and build(p), the whole figure with those params. Which params a face reads is the
-// pack's business; the studio's own sliders are lid, look, lookY, brow and mouth.
+// pack's business; the lab's own sliders are lid, look, lookY, brow and mouth.
 //   CharacterLab.wcExpressions.presets / mouths / sliders / rest   the default character's (the first one with expressions)
 //   CharacterLab.wcExpressions.params(name, p)   a preset's params with p over them (an unknown name: "neutral", or none)
 //   CharacterLab.wcExpressions.build(p)          the default character's figure with face params p

@@ -124,7 +124,7 @@
   // The parts the packs registered (CharacterLab.WC_EXTRA_PARTS, js/lab-packs.js) and the ones a family adds (e.g. the
   // expressions in wc-expressions.js), in order. A part maker gets the catalog helpers and returns a part or a list.
   // A part belongs to a character (default: the first one registered); a whole-figure part (whole: true) takes the
-  // face params, the studio's expression buttons and sliders.
+  // face params, the lab's expression buttons and sliders.
   const helpers = { v, hi, SHEETS, transformOps, opsBounds, scaleAbout, rotAbout, then };
   for (const xp of CharacterLab.WC_EXTRA_PARTS || []) PARTS.push(...[].concat(typeof xp === "function" ? xp(helpers) : xp));
   const firstCharacter = ((CharacterLab.WC_CHARACTERS || [])[0] || {}).id;

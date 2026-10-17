@@ -44,11 +44,11 @@ function packScript({ id, label, size: [w, h], box: [x, y, bw, bh] }) {
   const CL = window.CharacterLab;
   const { ellipse } = CL.lab.geom;          // also: spline(points, closed), rng(seed), flat(hex)
   const INK = "#281e28";
-  // The cel material: a flat colour, one hard shadow (ramp[0]), an even outline. See the top of studio/js/wc-gl.js.
+  // The cel material: a flat colour, one hard shadow (ramp[0]), an even outline. See the top of lab/js/wc-gl.js.
   const cel = (base, shade) => ({ type: 8, ramp: [shade, shade, base, base], line: INK, lineW: 3, shadow: 12, clean: true });
   const BACKDROP = "#eef0f3";               // the sheet's background colour: set it to what your sheet uses
 
-  // p: the studio's face params (eyes, mouth, look, …); honour the ones your character has.
+  // p: the lab's face params (eyes, mouth, look, …); honour the ones your character has.
   function build(p = {}) {
     return {
       world: [${w}, ${h}],
@@ -75,7 +75,7 @@ function packScript({ id, label, size: [w, h], box: [x, y, bw, bh] }) {
 }
 
 function packTest(id, testDir) {
-  const vm = relative(testDir, join(LAB_DIR, 'studio', 'scripts', 'lab-vm.mjs')).split('\\').join('/');
+  const vm = relative(testDir, join(LAB_DIR, 'lab', 'scripts', 'lab-vm.mjs')).split('\\').join('/');
   return `import test from 'node:test';
 import assert from 'node:assert/strict';
 import { checkPack } from '${vm.startsWith('.') ? vm : './' + vm}';
@@ -114,7 +114,7 @@ async function main() {
   const env = inLab ? '' : `LAB_PACKS=${rel && !rel.startsWith('..') ? rel : parent} `;
   console.log(`Made ${dir}/ (${size[0]}×${size[1]} sheet, figure box ${box.join(',')}).
 Next:
-  ${env}npm start                              # the studio shows ${label}
+  ${env}npm start                              # the lab shows ${label}
   ${env}npm run lab -- score --part=${id}    # its score
   ${env}npm run lab -- sheet --v=${id}-front # out/sheets/: painting | code | difference
 Then replace the placeholder in ${id}.js with real shapes, and score again.`);

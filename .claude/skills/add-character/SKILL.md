@@ -14,6 +14,6 @@ Follow "Add a character" in `AGENTS.md` at the repository root. In short:
    `CharacterLab.lab.geom.ellipse` / `spline`), back to front.
 4. **Measure:** `npm run lab -- score --part=<id>` and `npm run lab -- sheet --v=<id>-front --out=out/<id>.png`. Look
    at the difference image, fix the biggest misses, and repeat.
-5. **Show the user:** run `npm start` in the background and send them `http://localhost:8765/studio/?char=<id>`.
+5. **Show the user:** run `npm start` in the background and send them `http://localhost:8765/lab/?char=<id>`.
 
 Never draw the reference image itself to raise the score. Keep everything about the character inside its pack.

@@ -168,7 +168,7 @@
     }),
   ];
 
-  // ---------- the face's presets, mouths and sliders (the studio's expression buttons) ----------
+  // ---------- the face's presets, mouths and sliders (the lab's expression buttons) ----------
   const expressions = {
     presets: {
       painted: { label: "As painted", p: { mouth: "painted" } },

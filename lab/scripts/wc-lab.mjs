@@ -1,7 +1,7 @@
-// Character Lab from the command line: drives the studio/ pages in headless Chrome (real GPU, same renderer
-// and scorer as the studio) through the lab's own server (server.mjs, on a free port): the same packs
+// Character Lab from the command line: drives the lab/ pages in headless Chrome (real GPU, same renderer
+// and scorer as the lab) through the lab's own server (server.mjs, on a free port): the same packs
 // (lab.config.json, LAB_PACKS) and mounts as `npm start`.
-// Run from the lab's folder (`npm run lab -- <args>` is the same as `node studio/scripts/wc-lab.mjs <args>`):
+// Run from the lab's folder (`npm run lab -- <args>` is the same as `node lab/scripts/wc-lab.mjs <args>`):
 //   npm run lab -- score                       every variant
 //   npm run lab -- score --v=front --regions   one variant, plus every named part of the whole front
 //   npm run lab -- score --part=character      one part's variants
@@ -9,7 +9,7 @@
 //     --compare=out/base.json   show the change against a saved baseline (parts too)
 //     --json                    print the raw JSON
 //   npm run lab -- shot --url="inspect.html?region=footL" --out=out/foot.png
-//     screenshot of a studio/ page (--url is relative to studio/) once its title reads READY or DONE
+//     screenshot of a lab/ page (--url is relative to lab/) once its title reads READY or DONE
 // Improving the drawing with subagents (a pack's agents/README.md; its agents/packages.json, or --packages=<file>):
 //   npm run lab -- board [--compare=out/base.json]     every variant by family (out/board.md + out/board.json)
 //   npm run lab -- check --baseline=out/base.json --package=face   exit 1 if anything outside the package's scope
@@ -31,7 +31,7 @@ import { findPacks, readConfig } from '../../lab-config.mjs';
 import { boardLines, compare, families, packageStatus } from './lab-board.mjs';
 
 const LAB = resolve(dirname(fileURLToPath(import.meta.url)), '../..');   // the lab's folder
-const LAB_PATH = '/studio/';
+const LAB_PATH = '/lab/';
 const MAC = process.platform === 'darwin';
 // macOS: Chrome + Metal. Linux (the box): /usr/bin/google-chrome + SwiftShader software GL. CHROME= overrides the path.
 const CHROME = MAC ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : '/usr/bin/google-chrome';
@@ -180,7 +180,7 @@ async function shot(o) {
   if (!o.url || !o.out) throw new Error('shot needs --url and --out');
   const out = labFile(o.out);
   await withLab(async (browser, base) => {
-    // the studio (index.html) is ready once its score is shown (window.__wcScore); bake.html titles itself "score {…}"
+    // the lab (index.html) is ready once its score is shown (window.__wcScore); bake.html titles itself "score {…}"
     // once drawn; the other pages set READY or DONE
     const page = await openUntil(browser, base + o.url, () => /^(READY|DONE|ERROR|score )/.test(document.title) || !!window.__wcScore, +(o.width || 1400));
     const el = await page.$(o.selector || '#shot');
@@ -199,6 +199,6 @@ async function shot(o) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const o = parseArgs(process.argv.slice(2));
   const run = { score, shot, board, check, sheet, packages, film }[o.cmd];
-  if (!run) { console.error('usage: wc-lab.mjs score|board|check|sheet|packages|shot|film [options]  (see the header of studio/scripts/wc-lab.mjs)'); process.exit(2); }
+  if (!run) { console.error('usage: wc-lab.mjs score|board|check|sheet|packages|shot|film [options]  (see the header of lab/scripts/wc-lab.mjs)'); process.exit(2); }
   run(o).catch((e) => { console.error(e.message); process.exit(1); });
 }

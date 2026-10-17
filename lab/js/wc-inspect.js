@@ -5,7 +5,7 @@
 //   inspect.html?v=<variant id>         another figure
 //   inspect.html?region=footL           one part, large (&k=zoom, &grid=5, &outlines=1, &map=light|diff)
 //   inspect.html?box=60,300,130,344     any box in the painting's pixels
-//   &baseline=1                         also the version in studio/_baseline/ (its files.json lists the scripts a
+//   &baseline=1                         also the version in lab/_baseline/ (its files.json lists the scripts a
 //                                       pack's baseline script copied from a git ref)
 (async function () {
   const CharacterLab = window.CharacterLab, C = CharacterLab.wcCompare, E = CharacterLab.wcElements, R = CharacterLab.wcRegions;

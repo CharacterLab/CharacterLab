@@ -3,7 +3,7 @@
 // { head: { rot: degrees (+ = clockwise), dx, dy: units, sx, sy: scale }, … }. A part turns and scales about its pivot,
 // then moves, and carries its children (body > head > face > eyes…, as the pack's def says).
 //   matrices(def, pose)  each part's world matrix [a, b, c, d, e, f] (x' = a x + c y + e, y' = b x + d y + f)
-//   layers(scene)        the ops in drawing order, split for the studio's layered renderer (wc-gl.js renderRig):
+//   layers(scene)        the ops in drawing order, split for the lab's layered renderer (wc-gl.js renderRig):
 //                        "over" (a part's still ops, drawn once into their own texture and laid over with the part's
 //                        matrix), "mul" (the shadows a part casts on what lies below it: multiplied in), "dyn" (the
 //                        animated features: eyes, brows, mouth, moved here and drawn every frame)

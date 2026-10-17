@@ -2,11 +2,11 @@
 
 **Draw characters in code, and measure how close you got.**
 
-Character Lab is a small studio for characters that are drawn entirely by code: outlines, materials and a rig rendered
+Character Lab is a small lab for characters that are drawn entirely by code: outlines, materials and a rig rendered
 by a WebGL2 renderer, with no images used at render time. Every part of a character is checked against a reference
 sheet, side by side, with a score, so you can tell whether a change to the drawing actually helped.
 
-![The studio: the reference sheet on the left, the character drawn in code on the right](docs/images/studio.png)
+![The lab: the reference sheet on the left, the character drawn in code on the right](docs/images/lab.png)
 
 It ships with one example character, **Captain Kite**, whose code and sheets you're free to use.
 
@@ -23,8 +23,8 @@ steps and checks.
 ```text
 Clone https://github.com/CharacterLab/CharacterLab.git and cd into it.
 Read AGENTS.md and follow its "Install and check" steps: npm ci, then npm test (it must pass).
-Start the lab with npm start in the background and give me the studio link:
-http://localhost:8765/studio/
+Start the lab with npm start in the background and give me the lab link:
+http://localhost:8765/lab/
 ```
 
 **Add my character from a picture**
@@ -36,7 +36,7 @@ Then follow "Add a character" in AGENTS.md for my character, using this picture 
 /path/to/my-character.png
 Call it "My Character". Scaffold the pack with npm run new-pack, draw the character in code,
 score it with npm run lab -- score, look at npm run lab -- sheet, and keep improving until it reads well.
-When you're done, start the lab and give me the studio link for my character.
+When you're done, start the lab and give me the lab link for my character.
 ```
 
 **I don't have a picture yet**
@@ -46,7 +46,7 @@ Clone https://github.com/CharacterLab/CharacterLab.git and cd into it, then read
 Install it (npm ci, npm test).
 Make a reference sheet for a new character: <describe your character here>.
 Use a flat cel style on a plain light background, front view, full body, 1024x1024.
-Then follow "Add a character" in AGENTS.md to add it to the lab, and give me the studio link.
+Then follow "Add a character" in AGENTS.md to add it to the lab, and give me the lab link.
 ```
 
 Replace the path and the name with your own. You need Node.js 22.12+ and Google Chrome on the machine. The assistant
@@ -81,7 +81,7 @@ npm ci
 npm start          # open http://localhost:8765/
 ```
 
-Then open the studio at <http://localhost:8765/studio/>. To check everything works:
+Then open the lab at <http://localhost:8765/lab/>. To check everything works:
 
 ```bash
 npm test                 # the engine's tests and every pack's own tests
@@ -98,12 +98,12 @@ npm run new-pack -- star-girl --sheet=path/to/front.png --box=x,y,w,h --label="S
 
 ## 2. A tour of the lab
 
-### The studio: the sheet next to the code
+### The lab: the sheet next to the code
 
 Pick a character and a **part** (the whole figure, parts, expressions, poses), then a **variant**, which is one crop of
 a reference sheet. The painting is on the left, and the live WebGL drawing is on the right.
 
-![Poses in the studio: the waving pose, painted and drawn](docs/images/studio-poses.png)
+![Poses in the lab: the waving pose, painted and drawn](docs/images/lab-poses.png)
 
 ### Compare modes
 
@@ -126,7 +126,7 @@ Every variant gets a **fidelity** score (0–100) made of silhouette overlap, co
 ### Faces, rigs and clips
 
 A character can expose **face params** (eyes, lids, gaze, brows, mouth, blush), shown as buttons and sliders in the
-studio, plus a **rig** of parts that **clips** move over time. `anim.html` and `npm run lab -- film` lay a clip out as a
+lab, plus a **rig** of parts that **clips** move over time. `anim.html` and `npm run lab -- film` lay a clip out as a
 filmstrip.
 
 ![The wave clip as a filmstrip](docs/images/clip-wave.png)
@@ -203,7 +203,7 @@ const INK = "#281e28";
 const cel = (base, shade) => ({ type: 8, ramp: [shade, shade, base, base], line: INK, lineW: 3, shadow: 14, clean: true });
 
 function build(p = {}) {
-  const blink = p.eyes === "closed" ? 0.1 : 1;         // a face param from the studio
+  const blink = p.eyes === "closed" ? 0.1 : 1;         // a face param from the lab
   return {
     world: [512, 512],
     ops: [
@@ -240,7 +240,7 @@ CL.lab.registerCharacter({
 Point the lab at the folder that holds your pack:
 
 ```bash
-LAB_PACKS=examples npm start                         # Blob appears in the studio
+LAB_PACKS=examples npm start                         # Blob appears in the lab
 LAB_PACKS=examples npm run lab -- score --part=blob  # blob-front  90.3
 LAB_PACKS=examples npm run lab -- sheet --v=blob-front --out=out/blob.png   # painting | code | difference
 ```
@@ -252,7 +252,7 @@ LAB_PACKS=examples npm run lab -- sheet --v=blob-front --out=out/blob.png   # pa
 3. Run `npm run lab -- score --compare=out/base.json` to see each variant's change, and `sheet --v=...` to see where.
 
 When the whole figure reads well, add more: more variants (turnaround, expressions, poses) as crops of more sheets, an
-`expressions` block for the studio's face buttons, and a `rig` and `clips` for animation. Captain Kite's pack shows
+`expressions` block for the lab's face buttons, and a `rig` and `clips` for animation. Captain Kite's pack shows
 each of these. `packs/README.md` documents every field of `pack.json` and `registerCharacter`, and `checkPack` tests a
 pack against those rules (call it from your pack's `tests/`).
 
@@ -278,7 +278,7 @@ cp lab.config.example.json lab.config.json
 - `mounts`: other folders served read-only on the same port, if a pack's sheets live elsewhere.
 
 The server lists every pack at `/packs.json`, serves each one read-only at `/packs/<id>/` (its `tests/` and `tools/`
-stay private), and the pages load them in their `order`. With no packs at all, the studio opens with a short message
+stay private), and the pages load them in their `order`. With no packs at all, the lab opens with a short message
 saying so.
 
 ---
@@ -287,7 +287,7 @@ saying so.
 
 ![The cel material: one shape lit from three directions](docs/images/cel-material.png)
 
-The renderer (`studio/js/wc-gl.js`) draws layers of ops, each an SDF shape with a material. The built-in materials
+The renderer (`lab/js/wc-gl.js`) draws layers of ops, each an SDF shape with a material. The built-in materials
 are:
 - **painted** (the default): a soft wash with weak light, pigment blooms and paper grain;
 - **pools**: soft-edged colour;
@@ -298,7 +298,7 @@ A pack can add its own **materials and draw modes as GLSL**. A script named `*-g
 `CharacterLab.wcGL.registerMaterial()` or `registerMode()`, and the engine splices those chunks into its shader before it
 compiles. The loader runs every pack's `*-gl.js` first. A pack can also hold materials only (`"kind": "materials"`):
 other packs then `"requires"` it to share one look. The API is documented at the top of `wc-gl.js`, and
-`studio/cel.html` shows the cel material on its own.
+`lab/cel.html` shows the cel material on its own.
 
 ---
 
@@ -308,11 +308,11 @@ other packs then `"requires"` it to share one look. The API is documented at the
 |---------|--------------|
 | `npm run lab -- score` | every variant's score (`--part=`, `--v=`, `--save=`, `--compare=`, `--json`) |
 | `npm run lab -- sheet --v=<id>` | painting \| code \| difference image for one variant |
-| `npm run lab -- shot --url=<page>` | screenshot of a studio page once it's ready |
+| `npm run lab -- shot --url=<page>` | screenshot of a lab page once it's ready |
 | `npm run lab -- film --clip=<id>` | a clip's frames as a filmstrip (`--frames`, `--zoom`, `--fps`) |
 | `npm run lab -- board` / `check` / `packages` | group scores by family, guard a change, split work into packages |
 
-The header of `studio/scripts/wc-lab.mjs` lists every option. Output goes to `out/` (git-ignored).
+The header of `lab/scripts/wc-lab.mjs` lists every option. Output goes to `out/` (git-ignored).
 
 ---
 
@@ -322,8 +322,8 @@ The header of `studio/scripts/wc-lab.mjs` lists every option. Output goes to `ou
 index.html            home page
 server.mjs            local server (loopback only, read-only, browser assets only)
 lab-config.mjs        finds packs and mounts (lab.config.json, LAB_PACKS)
-studio/               the engine
-  index.html          the studio            score.html   scores      anim.html   clips
+lab/                  the engine
+  index.html          the lab               score.html   scores      anim.html   clips
   cel.html            the cel material      inspect.html, bake.html  tools for figures scored with landmarks
   js/                 renderer, catalog, scoring, rig and clips, face params, pack API and loader
   scripts/            command line, test runner

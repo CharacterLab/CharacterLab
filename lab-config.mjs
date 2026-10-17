@@ -16,7 +16,7 @@ const SCRIPT = /^(?!.*(^|\/)\.)[\w./-]+\.js$/;
 const SVG = /^(?!.*(^|\/)\.)[\w./-]+\.svg$/;
 // A mount prefix: /name/…/ in plain characters, never one of the lab's own paths.
 const PREFIX = /^\/[\w-]+(\/[\w.-]+)*\/$/;
-const RESERVED = /^\/(studio|packs|node_modules)\//;
+const RESERVED = /^\/(lab|studio|packs|api|node_modules)\//;   // /studio/ redirects to /lab/; /api/ is the server's
 
 const asList = (x, what) => {
   if (x == null) return [];
