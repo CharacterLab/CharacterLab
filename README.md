@@ -10,53 +10,48 @@ sheet, side by side, with a score, so you can tell whether a change to the drawi
 
 It ships with one example character, **Captain Kite**, whose code and sheets you're free to use.
 
----
+## Get started: just ask your agent
 
-## Fastest way: let your code assistant do it
+You don't need to learn any commands. Your AI agent installs the lab, creates your character and opens it for you.
 
-Open **Claude Code**, **Codex**, **Cursor** or any coding assistant in an empty folder, and paste **one** of these
-prompts. Each one tells the assistant to clone this repository and follow [`AGENTS.md`](AGENTS.md), which has the exact
-steps and checks.
+### 1. Add the lab to your agent
 
-**Install it and show me**
+| Agent | Type this in the agent |
+|-------|------------------------|
+| **Claude Code** | `/plugin marketplace add CharacterLab/CharacterLab` then `/plugin install character-lab@character-lab` |
+| **Codex** | `codex plugin marketplace add CharacterLab/CharacterLab` then `codex plugin add character-lab@character-lab` |
+| **Any other agent** (Cursor, …) | nothing: paste a prompt from step 2, starting with *"Clone https://github.com/CharacterLab/CharacterLab.git and read AGENTS.md."* |
 
-```text
-Clone https://github.com/CharacterLab/CharacterLab.git and cd into it.
-Read AGENTS.md and follow its "Install and check" steps: npm ci, then npm test (it must pass).
-Start the lab with npm start in the background and give me the lab link:
-http://localhost:8765/lab/
-```
+The plugin brings the lab's [skills](skills/) and its tools (an [MCP server](mcp/)): your agent can start the lab,
+create a character from your pictures, score it and show you comparisons.
 
-**Add my character from a picture**
+### 2. Ask, in your own words
 
 ```text
-Clone https://github.com/CharacterLab/CharacterLab.git and cd into it, then read AGENTS.md.
-Install it (npm ci, npm test).
-Then follow "Add a character" in AGENTS.md for my character, using this picture as the reference sheet:
-/path/to/my-character.png
-Call it "My Character". Scaffold the pack with npm run new-pack, draw the character in code,
-score it with npm run lab -- score, look at npm run lab -- sheet, and keep improving until it reads well.
-When you're done, start the lab and give me the lab link for my character.
+Install Character Lab and show me the sample character.
 ```
-
-**I don't have a picture yet**
 
 ```text
-Clone https://github.com/CharacterLab/CharacterLab.git and cd into it, then read AGENTS.md.
-Install it (npm ci, npm test).
-Make a reference sheet for a new character: <describe your character here>.
-Use a flat cel style on a plain light background, front view, full body, 1024x1024.
-Then follow "Add a character" in AGENTS.md to add it to the lab, and give me the lab link.
+Add my character to Character Lab from this picture: /path/to/my-character.png
+Call him "Max". Draw him in code until he looks right, then open him in the lab.
 ```
 
-Replace the path and the name with your own. You need Node.js 22.12+ and Google Chrome on the machine. The assistant
-will check both.
+```text
+I don't have a picture yet. Make a reference picture of a friendly robot girl with a red scarf,
+then add her to Character Lab and show me the lab.
+```
+
+Your agent checks that Node.js 22.12+ and Google Chrome are installed, and tells you if something is missing.
+
+### Or do it yourself in the lab
+
+Open the lab, press **New character**, drop in your pictures, check the crop it found and press **Create**. Or press
+**Try the sample** to look around with Captain Kite. See [Quick start](#1-quick-start).
 
 ---
 
 ## Contents
 
-0. [Fastest way: let your code assistant do it](#fastest-way-let-your-code-assistant-do-it)
 1. [Quick start](#1-quick-start)
 2. [A tour of the lab](#2-a-tour-of-the-lab)
 3. [Meet Captain Kite](#3-meet-captain-kite)
