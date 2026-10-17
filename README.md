@@ -45,6 +45,22 @@ npm test                 # the engine's tests and every pack's own tests
 npm run lab -- score     # every variant's score, in headless Chrome
 ```
 
+### With a code assistant
+
+Using Claude Code, Codex or another assistant? Open this folder in it and ask, for example:
+
+> Install Character Lab and add my character from `~/Pictures/hero.png`.
+
+`AGENTS.md` (and `CLAUDE.md`, which points to it) walks the assistant through the whole job: install, scaffold the pack
+with `npm run new-pack`, draw the character in code, score it and iterate. Claude Code also picks up the
+`add-character` skill in `.claude/skills/`.
+
+To scaffold a character yourself:
+
+```bash
+npm run new-pack -- star-girl --sheet=path/to/front.png --box=x,y,w,h --label="Star Girl"
+```
+
 ---
 
 ## 2. A tour of the lab

@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node server.mjs",
     "test": "node studio/scripts/run-tests.mjs",
-    "lab": "node studio/scripts/wc-lab.mjs"
+    "lab": "node studio/scripts/wc-lab.mjs",
+    "new-pack": "node studio/scripts/new-pack.mjs"
   },
   "dependencies": {
     "puppeteer-core": "^25.13.0"
