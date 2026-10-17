@@ -25,6 +25,18 @@ test('new-pack makes a pack that loads, with the figure box as its crop', async 
   assert.match(await readFile(join(pack, 'test-hero.js'), 'utf8'), /frame: \[96, 96, 320, 320\]/);
 });
 
+test('new-pack finds the figure box from the picture when --box is left out, and takes more sheets', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'new-pack-'));
+  const r = run(['auto-box', `--sheet=${SHEET}`, `--sheet=${SHEET}`, `--dir=${dir}`]);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /found from the picture; 2 variants/);
+  const js = await readFile(join(dir, 'auto-box', 'auto-box.js'), 'utf8');
+  const [x, y, w, h] = JSON.parse(/frame: (\[[^\]]+\])/.exec(js)[1]);
+  assert.ok(x > 0 && y > 0 && x + w < 512 && y + h < 512 && w > 100 && h > 100, `the box ${[x, y, w, h]} is around Blob, inside the sheet`);
+  assert.ok(existsSync(join(dir, 'auto-box', 'sheets', 'front-2.png')), 'the second sheet keeps its own file');
+  assert.equal((await checkPack(new URL(`file://${join(dir, 'auto-box')}/`))).id, 'auto-box');
+});
+
 test('new-pack refuses a bad id, a missing sheet, a box off the sheet and an existing folder', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'new-pack-'));
   assert.notEqual(run(['Bad_Id', `--sheet=${SHEET}`, `--dir=${dir}`]).status, 0);
