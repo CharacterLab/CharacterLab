@@ -6,7 +6,7 @@ Character Lab is a small lab for characters that are drawn entirely by code: out
 by a WebGL2 renderer, with no images used at render time. Every part of a character is checked against a reference
 sheet, side by side, with a score, so you can tell whether a change to the drawing actually helped.
 
-![The lab: the reference sheet on the left, the character drawn in code on the right](docs/images/lab.png)
+![The lab's home: create a new character or try the sample](docs/images/home.png)
 
 It ships with one example character, **Captain Kite**, whose code and sheets you're free to use.
 
@@ -45,8 +45,20 @@ Your agent checks that Node.js 22.12+ and Google Chrome are installed, and tells
 
 ### Or do it yourself in the lab
 
-Open the lab, press **New character**, drop in your pictures, check the crop it found and press **Create**. Or press
-**Try the sample** to look around with Captain Kite. See [Quick start](#1-quick-start).
+Open the lab, press **New character**, drop in your pictures, check the crop it found and press **Create**:
+
+![New character: name it, drop in pictures, adjust the crop](docs/images/new-character.png)
+
+The lab makes the pack and opens it next to your picture with its first score. It starts as a placeholder shape, and
+your agent (or you, in code) then draws the character to match:
+
+![A new character in the lab: the picture, a placeholder drawing and its score](docs/images/new-character-created.png)
+
+Or press **Try the sample** to look around with Captain Kite:
+
+![The lab: the reference sheet on the left, the character drawn in code on the right](docs/images/lab.png)
+
+See [Quick start](#1-quick-start) to run it without an agent.
 
 ---
 
