@@ -8,7 +8,7 @@ import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createLabServer} from '../server.mjs';
 
-// The lab's server (server.mjs): the home page, the studio, the packs and the mounted folders, on throwaway
+// The lab's server (server.mjs): the home page, the lab, the packs and the mounted folders, on throwaway
 // fixtures (a mounted art folder and a pack with a page), so the tests never depend on any pack being installed.
 async function makeArtFixture() {
   const dir = await mkdtemp(join(tmpdir(), 'lab-art-'));
@@ -50,30 +50,46 @@ function rawGet(port, path, method = 'GET', host = `localhost:${port}`) {
   });
 }
 
-test('the home page leads to the studio and its tools', async t => {
+test('the home page leads to the lab and its tools', async t => {
   const {server, base} = await startLab();
   t.after(() => server.close());
   const res = await fetch(`${base}/`);
   assert.equal(res.status, 200);
   assert.match(res.headers.get('content-type'), /text\/html/);
   const html = await res.text();
-  for (const href of ['studio/', 'studio/score.html', 'studio/anim.html', 'studio/cel.html']) assert.ok(html.includes(`href="${href}"`), `home links to ${href}`);
+  for (const href of ['lab/', 'lab/new.html', 'lab/?char=captain-kite', 'lab/score.html', 'lab/anim.html', 'lab/cel.html']) assert.ok(html.includes(`href="${href}"`), `home links to ${href}`);
+  const lab = await (await fetch(`${base}/lab/`)).text();
+  assert.ok(lab.includes('href="new.html"'), 'the lab has a New character button');
 });
 
-test('the studio pages and a pack\'s page are served as they are', async t => {
+test('the lab pages and a pack\'s page are served as they are', async t => {
   const {server, base} = await startLab();
   t.after(() => server.close());
-  for (const path of ['/studio/', '/studio/score.html', '/studio/inspect.html', '/studio/bake.html', '/studio/anim.html', '/studio/cel.html', '/packs/pip/tool.html']) {
+  for (const path of ['/lab/', '/lab/new.html', '/lab/score.html', '/lab/inspect.html', '/lab/bake.html', '/lab/anim.html', '/lab/cel.html', '/packs/pip/tool.html']) {
     const res = await fetch(`${base}${path}`);
     assert.equal(res.status, 200, path);
     assert.match(res.headers.get('content-type'), /text\/html/, path);
   }
-  const js = await fetch(`${base}/studio/js/wc-gl.js`);
-  assert.equal(js.status, 200);
-  assert.match(js.headers.get('content-type'), /javascript/);
-  const folder = await fetch(`${base}/studio?part=ears`, {redirect: 'manual'});
+  for (const path of ['/lab/js/wc-gl.js', '/lab/js/lab-new.mjs', '/lab/js/lab-box.mjs', '/lab/js/lab-pack-rules.mjs']) {
+    const js = await fetch(`${base}${path}`);
+    assert.equal(js.status, 200, path);
+    assert.match(js.headers.get('content-type'), /javascript/, path);
+  }
+  assert.match((await fetch(`${base}/lab/css/app.css`)).headers.get('content-type'), /text\/css/);
+  const folder = await fetch(`${base}/lab?part=ears`, {redirect: 'manual'});
   assert.equal(folder.status, 301);
-  assert.equal(folder.headers.get('location'), '/studio/?part=ears');
+  assert.equal(folder.headers.get('location'), '/lab/?part=ears');
+});
+
+test('old /studio/ links move to the same page under /lab/, with their query', async t => {
+  const {server, base} = await startLab();
+  t.after(() => server.close());
+  for (const [from, to] of [['/studio', '/lab/'], ['/studio/', '/lab/'], ['/studio/?char=pip&v=pip-front', '/lab/?char=pip&v=pip-front'],
+    ['/studio/score.html?part=pip', '/lab/score.html?part=pip'], ['/studio/js/wc-gl.js', '/lab/js/wc-gl.js']]) {
+    const res = await fetch(`${base}${from}`, {redirect: 'manual'});
+    assert.equal(res.status, 301, from);
+    assert.equal(res.headers.get('location'), to, from);
+  }
 });
 
 test('scripts, tests, package files and server code are never served', async t => {
@@ -81,13 +97,13 @@ test('scripts, tests, package files and server code are never served', async t =
   t.after(() => server.close());
   for (const path of [
     '/.env', '/.gitignore', '/server.mjs', '/lab-config.mjs', '/lab.config.json', '/lab.config.example.json', '/static-mounts.js', '/README.md', '/LICENSE',
-    '/package.json', '/package-lock.json', '/tests/lab.test.mjs', '/node_modules/three/package.json', '/node_modules/puppeteer-core/package.json',
-    '/studio/scripts/wc-lab.mjs', '/studio/scripts', '/studio/scripts/', '/studio/tests/wc-lab-cli.test.mjs', '/studio/tests/',
-    '/studio/Scripts/wc-lab.mjs', '/studio/%73cripts/wc-lab.mjs', '/studio/TESTS/wc-lab-cli.test.mjs', '/studio/js/', '/studio/js/wc-gl.js/',
+    '/package.json', '/package-lock.json', '/lab-api.mjs', '/lab/scripts/pack-maker.mjs', '/lab/scripts/png.mjs', '/tests/lab.test.mjs', '/node_modules/three/package.json', '/node_modules/puppeteer-core/package.json',
+    '/lab/scripts/wc-lab.mjs', '/lab/scripts', '/lab/scripts/', '/lab/tests/wc-lab-cli.test.mjs', '/lab/tests/',
+    '/lab/Scripts/wc-lab.mjs', '/lab/%73cripts/wc-lab.mjs', '/lab/TESTS/wc-lab-cli.test.mjs', '/lab/js/', '/lab/js/wc-gl.js/',
   ]) {
     assert.equal((await fetch(`${base}${path}`, {redirect: 'manual'})).status, 404, path);
   }
-  for (const path of ['/studio/../server.mjs', '/studio/..%2Fserver.mjs', '/studio/%2e%2e/.env', '/studio/js/..%5C..%5Cserver.mjs', '/packs/pip/..%2F..%2Fpackage.json']) {
+  for (const path of ['/lab/../server.mjs', '/lab/..%2Fserver.mjs', '/lab/%2e%2e/.env', '/lab/js/..%5C..%5Cserver.mjs', '/packs/pip/..%2F..%2Fpackage.json']) {
     assert.equal(await rawGet(port, path), 404, path);
   }
 });

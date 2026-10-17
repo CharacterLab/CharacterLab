@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='54' font-size='54'%3E%F0%9F%96%8C%3C/text%3E%3C/svg%3E">
+<title>New character · Character Lab</title>
+<meta name="description" content="Start a character in Character Lab from one or more pictures: name it, check the crop, and open it in the lab.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  main { max-width: 980px; margin: 0 auto; padding: 28px 20px 64px; }
+  h1 { font: 600 clamp(28px, 5vw, 38px)/1.1 var(--serif); margin: 0 0 8px; }
+  .lede { color: var(--ink-2); margin: 0 0 24px; max-width: 62ch; }
+  form { display: grid; gap: 18px; }
+  .step { padding: 20px; }
+  .step h2 { font: 600 19px/1.2 var(--serif); margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px; }
+  .step h2 b { font: 700 12px/1 var(--sans); color: var(--on-key); background: var(--key); border-radius: 999px; width: 22px; height: 22px; display: inline-grid; place-items: center; flex: none; }
+  .step > p { margin: 0 0 14px; color: var(--ink-2); font-size: 14px; }
+  .fields { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 14px; }
+  label.field { display: grid; gap: 6px; font: 700 13px/1.2 var(--sans); }
+  label.field small { font-weight: 400; color: var(--ink-2); }
+  input[type=text] { width: 100%; border: 1px solid var(--rule); background: var(--sheet); border-radius: 10px; padding: 11px 12px; font-size: 15px; }
+  input[type=text]:focus { border-color: var(--key); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--key) 25%, transparent); }
+  input.mono { font-family: var(--mono); font-size: 14px; }
+  .hint { font-size: 12px; color: var(--ink-2); min-height: 1.3em; margin: 0; }
+  .hint.bad { color: var(--danger); }
+
+  .drop { display: grid; place-items: center; gap: 8px; text-align: center; padding: 28px 16px; border: 2px dashed var(--rule); border-radius: 14px; background: var(--paper); cursor: pointer; transition: border-color .15s, background .15s; }
+  .drop:hover, .drop.over { border-color: var(--key); background: var(--paper-2); }
+  .drop svg { width: 34px; height: 34px; color: var(--accent); }
+  .drop strong { font: 600 17px/1.2 var(--serif); }
+  .drop span { color: var(--ink-2); font-size: 13px; }
+  .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+  .sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-top: 16px; }
+  .sheet { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--rule); border-radius: 14px; background: var(--paper); }
+  .sheet.front { border-color: var(--key); box-shadow: 0 0 0 1px var(--key); }
+  .sheet-head { display: flex; align-items: center; gap: 8px; }
+  .badge { font: 700 10px/1 var(--sans); letter-spacing: .12em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; background: var(--paper-2); color: var(--ink-2); }
+  .front .badge { background: var(--key); color: var(--on-key); }
+  .sheet-head input { flex: 1; min-width: 0; padding: 7px 9px; font-size: 13px; }
+  .stage { position: relative; overflow: hidden; border-radius: 10px; background: var(--sheet); touch-action: none; user-select: none; -webkit-user-select: none; }
+  .stage img { display: block; width: 100%; height: auto; pointer-events: none; }
+  .crop { position: absolute; border: 2px solid var(--accent); box-shadow: 0 0 0 9999px rgba(30, 20, 10, .38); cursor: move; }
+  .crop i { position: absolute; width: 16px; height: 16px; background: var(--card); border: 2px solid var(--accent); border-radius: 50%; }
+  .crop i[data-h=nw] { left: -9px; top: -9px; cursor: nwse-resize; }
+  .crop i[data-h=ne] { right: -9px; top: -9px; cursor: nesw-resize; }
+  .crop i[data-h=sw] { left: -9px; bottom: -9px; cursor: nesw-resize; }
+  .crop i[data-h=se] { right: -9px; bottom: -9px; cursor: nwse-resize; }
+  .sheet-foot { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .sheet-foot output { font: 600 12px/1 var(--mono); color: var(--ink-2); margin-right: auto; }
+
+  .actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .actions .btn.primary { padding: 14px 22px; font-size: 15px; }
+  #status { flex: 1 1 260px; }
+  @media (max-width: 640px) {
+    main { padding: 20px 16px 48px; }
+    .fields { grid-template-columns: minmax(0, 1fr); }
+    .step { padding: 16px; }
+    .sheets { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="3.5"/><path d="M5.5 20.5c.5-4.5 3-7.5 6.5-7.5s6 3 6.5 7.5z"/></svg>Character Lab</a>
+    <nav aria-label="Lab pages"><a href="./">The lab</a><a href="score.html">Scores</a><a href="anim.html">Clips</a></nav>
+  </header>
+
+  <main>
+    <p class="eyebrow">New character</p>
+    <h1>Start a character from a picture</h1>
+    <p class="lede">Give it a name and add its reference pictures. The lab finds the figure on each one and makes a pack: a
+      placeholder drawing you then replace with the character in code, scored against these pictures.</p>
+
+    <form id="form" novalidate>
+      <section class="step card">
+        <h2><b>1</b> Name</h2>
+        <p>The id names its folder and its links; it follows the name until you change it.</p>
+        <div class="fields">
+          <label class="field">Name <input type="text" id="label" name="label" maxlength="60" placeholder="Star Girl" autocomplete="off" required></label>
+          <label class="field">Id <input type="text" class="mono" id="id" name="id" maxlength="40" placeholder="star-girl" autocomplete="off" spellcheck="false" required></label>
+        </div>
+        <p class="hint" id="id-hint" aria-live="polite"></p>
+      </section>
+
+      <section class="step card">
+        <h2><b>2</b> Pictures</h2>
+        <p>PNG, JPEG or WebP, on a plain background. The first is the front: a full-body view, nothing cropped. Add more
+          views if you have them (up to 8). Drag the box, or its corners, to change the crop.</p>
+        <label class="drop" id="drop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="9.5" r="1.8"/><path d="m21 16-5-5-9 9"/></svg>
+          <strong>Drop pictures here</strong>
+          <span>or click to choose files</span>
+          <input type="file" id="files" accept="image/png,image/jpeg,image/webp" multiple>
+        </label>
+        <div class="sheets" id="sheets" aria-live="polite"></div>
+      </section>
+
+      <div class="actions">
+        <button class="btn primary" id="create" type="submit">Create character</button>
+        <p class="notice" id="status" role="status" hidden></p>
+      </div>
+    </form>
+  </main>
+
+  <template id="sheet-tpl">
+    <figure class="sheet" style="margin:0">
+      <div class="sheet-head"><span class="badge"></span><input type="text" class="sheet-name" maxlength="40" aria-label="View name"></div>
+      <div class="stage"><img alt=""><div class="crop"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div>
+      <div class="sheet-foot">
+        <output class="box-out"></output>
+        <button type="button" class="btn small" data-act="reset">Find again</button>
+        <button type="button" class="btn small" data-act="front">Make front</button>
+        <button type="button" class="btn small" data-act="remove">Remove</button>
+      </div>
+    </figure>
+  </template>
+
+  <script type="module" src="js/lab-new.mjs"></script>
+</body>
+</html>

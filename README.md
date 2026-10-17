@@ -2,61 +2,68 @@
 
 **Draw characters in code, and measure how close you got.**
 
-Character Lab is a small studio for characters that are drawn entirely by code: outlines, materials and a rig rendered
+Character Lab is a small lab for characters that are drawn entirely by code: outlines, materials and a rig rendered
 by a WebGL2 renderer, with no images used at render time. Every part of a character is checked against a reference
 sheet, side by side, with a score, so you can tell whether a change to the drawing actually helped.
 
-![The studio: the reference sheet on the left, the character drawn in code on the right](docs/images/studio.png)
+![The lab's home: create a new character or try the sample](docs/images/home.png)
 
 It ships with one example character, **Captain Kite**, whose code and sheets you're free to use.
 
----
+## Get started: just ask your agent
 
-## Fastest way: let your code assistant do it
+You don't need to learn any commands. Your AI agent installs the lab, creates your character and opens it for you.
 
-Open **Claude Code**, **Codex**, **Cursor** or any coding assistant in an empty folder, and paste **one** of these
-prompts. Each one tells the assistant to clone this repository and follow [`AGENTS.md`](AGENTS.md), which has the exact
-steps and checks.
+### 1. Add the lab to your agent
 
-**Install it and show me**
+| Agent | Type this in the agent |
+|-------|------------------------|
+| **Claude Code** | `/plugin marketplace add CharacterLab/CharacterLab` then `/plugin install character-lab@character-lab` |
+| **Codex** | `codex plugin marketplace add CharacterLab/CharacterLab` then `codex plugin add character-lab@character-lab` |
+| **Any other agent** (Cursor, …) | nothing: paste a prompt from step 2, starting with *"Clone https://github.com/CharacterLab/CharacterLab.git and read AGENTS.md."* |
 
-```text
-Clone https://github.com/CharacterLab/CharacterLab.git and cd into it.
-Read AGENTS.md and follow its "Install and check" steps: npm ci, then npm test (it must pass).
-Start the lab with npm start in the background and give me the studio link:
-http://localhost:8765/studio/
-```
+The plugin brings the lab's [skills](skills/) and its tools (an [MCP server](mcp/)): your agent can start the lab,
+create a character from your pictures, score it and show you comparisons.
 
-**Add my character from a picture**
+### 2. Ask, in your own words
 
 ```text
-Clone https://github.com/CharacterLab/CharacterLab.git and cd into it, then read AGENTS.md.
-Install it (npm ci, npm test).
-Then follow "Add a character" in AGENTS.md for my character, using this picture as the reference sheet:
-/path/to/my-character.png
-Call it "My Character". Scaffold the pack with npm run new-pack, draw the character in code,
-score it with npm run lab -- score, look at npm run lab -- sheet, and keep improving until it reads well.
-When you're done, start the lab and give me the studio link for my character.
+Install Character Lab and show me the sample character.
 ```
-
-**I don't have a picture yet**
 
 ```text
-Clone https://github.com/CharacterLab/CharacterLab.git and cd into it, then read AGENTS.md.
-Install it (npm ci, npm test).
-Make a reference sheet for a new character: <describe your character here>.
-Use a flat cel style on a plain light background, front view, full body, 1024x1024.
-Then follow "Add a character" in AGENTS.md to add it to the lab, and give me the studio link.
+Add my character to Character Lab from this picture: /path/to/my-character.png
+Call him "Max". Draw him in code until he looks right, then open him in the lab.
 ```
 
-Replace the path and the name with your own. You need Node.js 22.12+ and Google Chrome on the machine. The assistant
-will check both.
+```text
+I don't have a picture yet. Make a reference picture of a friendly robot girl with a red scarf,
+then add her to Character Lab and show me the lab.
+```
+
+Your agent checks that Node.js 22.12+ and Google Chrome are installed, and tells you if something is missing.
+
+### Or do it yourself in the lab
+
+Open the lab, press **New character**, drop in your pictures, check the crop it found and press **Create**:
+
+![New character: name it, drop in pictures, adjust the crop](docs/images/new-character.png)
+
+The lab makes the pack and opens it next to your picture with its first score. It starts as a placeholder shape, and
+your agent (or you, in code) then draws the character to match:
+
+![A new character in the lab: the picture, a placeholder drawing and its score](docs/images/new-character-created.png)
+
+Or press **Try the sample** to look around with Captain Kite:
+
+![The lab: the reference sheet on the left, the character drawn in code on the right](docs/images/lab.png)
+
+See [Quick start](#1-quick-start) to run it without an agent.
 
 ---
 
 ## Contents
 
-0. [Fastest way: let your code assistant do it](#fastest-way-let-your-code-assistant-do-it)
 1. [Quick start](#1-quick-start)
 2. [A tour of the lab](#2-a-tour-of-the-lab)
 3. [Meet Captain Kite](#3-meet-captain-kite)
@@ -81,29 +88,32 @@ npm ci
 npm start          # open http://localhost:8765/
 ```
 
-Then open the studio at <http://localhost:8765/studio/>. To check everything works:
+The home page offers two ways in: **Create a new character** from your own pictures, or **Try the sample**, Captain
+Kite, in the lab at <http://localhost:8765/lab/>. To check everything works:
 
 ```bash
 npm test                 # the engine's tests and every pack's own tests
 npm run lab -- score     # every variant's score, in headless Chrome
 ```
 
-To start a character of your own from a picture:
+To start a character of your own from a picture, use the lab's **New character** page
+(<http://localhost:8765/lab/new.html>): name it, drop in one or more pictures (the first is the front), check the
+crop the lab found, and press Create. The same from the command line:
 
 ```bash
-npm run new-pack -- star-girl --sheet=path/to/front.png --box=x,y,w,h --label="Star Girl"
+npm run new-pack -- star-girl --sheet=path/to/front.png --label="Star Girl"   # --box=x,y,w,h to set the crop yourself
 ```
 
 ---
 
 ## 2. A tour of the lab
 
-### The studio: the sheet next to the code
+### The lab: the sheet next to the code
 
 Pick a character and a **part** (the whole figure, parts, expressions, poses), then a **variant**, which is one crop of
 a reference sheet. The painting is on the left, and the live WebGL drawing is on the right.
 
-![Poses in the studio: the waving pose, painted and drawn](docs/images/studio-poses.png)
+![Poses in the lab: the waving pose, painted and drawn](docs/images/lab-poses.png)
 
 ### Compare modes
 
@@ -126,7 +136,7 @@ Every variant gets a **fidelity** score (0–100) made of silhouette overlap, co
 ### Faces, rigs and clips
 
 A character can expose **face params** (eyes, lids, gaze, brows, mouth, blush), shown as buttons and sliders in the
-studio, plus a **rig** of parts that **clips** move over time. `anim.html` and `npm run lab -- film` lay a clip out as a
+lab, plus a **rig** of parts that **clips** move over time. `anim.html` and `npm run lab -- film` lay a clip out as a
 filmstrip.
 
 ![The wave clip as a filmstrip](docs/images/clip-wave.png)
@@ -172,8 +182,9 @@ This walks through `examples/blob/`, the smallest character that works: one shee
 
 ### Step 1: Make a reference sheet
 
-Paint, draw or generate a picture of your character on a plain background and save it as a PNG. Note the box
-(`x, y, width, height` in pixels) around the figure: that's the crop the lab scores.
+Paint, draw or generate a picture of your character on a plain background and save it as a PNG. The box
+(`x, y, width, height` in pixels) around the figure is the crop the lab scores; the New character page and
+`npm run new-pack` find it for you, and you can set it by hand.
 
 ```
 examples/blob/
@@ -203,7 +214,7 @@ const INK = "#281e28";
 const cel = (base, shade) => ({ type: 8, ramp: [shade, shade, base, base], line: INK, lineW: 3, shadow: 14, clean: true });
 
 function build(p = {}) {
-  const blink = p.eyes === "closed" ? 0.1 : 1;         // a face param from the studio
+  const blink = p.eyes === "closed" ? 0.1 : 1;         // a face param from the lab
   return {
     world: [512, 512],
     ops: [
@@ -240,7 +251,7 @@ CL.lab.registerCharacter({
 Point the lab at the folder that holds your pack:
 
 ```bash
-LAB_PACKS=examples npm start                         # Blob appears in the studio
+LAB_PACKS=examples npm start                         # Blob appears in the lab
 LAB_PACKS=examples npm run lab -- score --part=blob  # blob-front  90.3
 LAB_PACKS=examples npm run lab -- sheet --v=blob-front --out=out/blob.png   # painting | code | difference
 ```
@@ -252,7 +263,7 @@ LAB_PACKS=examples npm run lab -- sheet --v=blob-front --out=out/blob.png   # pa
 3. Run `npm run lab -- score --compare=out/base.json` to see each variant's change, and `sheet --v=...` to see where.
 
 When the whole figure reads well, add more: more variants (turnaround, expressions, poses) as crops of more sheets, an
-`expressions` block for the studio's face buttons, and a `rig` and `clips` for animation. Captain Kite's pack shows
+`expressions` block for the lab's face buttons, and a `rig` and `clips` for animation. Captain Kite's pack shows
 each of these. `packs/README.md` documents every field of `pack.json` and `registerCharacter`, and `checkPack` tests a
 pack against those rules (call it from your pack's `tests/`).
 
@@ -276,9 +287,11 @@ cp lab.config.example.json lab.config.json
 
 - `packs`: folders of packs, relative to the lab. `LAB_PACKS` (colon-separated) adds more.
 - `mounts`: other folders served read-only on the same port, if a pack's sheets live elsewhere.
+- `newPacksDir`: where the New character page makes packs (default: the lab's own `packs/`; `LAB_NEW_PACKS` too).
 
 The server lists every pack at `/packs.json`, serves each one read-only at `/packs/<id>/` (its `tests/` and `tools/`
-stay private), and the pages load them in their `order`. With no packs at all, the studio opens with a short message
+stay private), and the pages load them in their `order`. Its one write is `POST /api/characters`, which the New
+character page uses to make a pack; it answers only the lab's own page. With no packs at all, the lab opens with a short message
 saying so.
 
 ---
@@ -287,7 +300,7 @@ saying so.
 
 ![The cel material: one shape lit from three directions](docs/images/cel-material.png)
 
-The renderer (`studio/js/wc-gl.js`) draws layers of ops, each an SDF shape with a material. The built-in materials
+The renderer (`lab/js/wc-gl.js`) draws layers of ops, each an SDF shape with a material. The built-in materials
 are:
 - **painted** (the default): a soft wash with weak light, pigment blooms and paper grain;
 - **pools**: soft-edged colour;
@@ -298,7 +311,7 @@ A pack can add its own **materials and draw modes as GLSL**. A script named `*-g
 `CharacterLab.wcGL.registerMaterial()` or `registerMode()`, and the engine splices those chunks into its shader before it
 compiles. The loader runs every pack's `*-gl.js` first. A pack can also hold materials only (`"kind": "materials"`):
 other packs then `"requires"` it to share one look. The API is documented at the top of `wc-gl.js`, and
-`studio/cel.html` shows the cel material on its own.
+`lab/cel.html` shows the cel material on its own.
 
 ---
 
@@ -308,25 +321,27 @@ other packs then `"requires"` it to share one look. The API is documented at the
 |---------|--------------|
 | `npm run lab -- score` | every variant's score (`--part=`, `--v=`, `--save=`, `--compare=`, `--json`) |
 | `npm run lab -- sheet --v=<id>` | painting \| code \| difference image for one variant |
-| `npm run lab -- shot --url=<page>` | screenshot of a studio page once it's ready |
+| `npm run lab -- shot --url=<page>` | screenshot of a lab page once it's ready (`--url=/` the home page, `--full`) |
 | `npm run lab -- film --clip=<id>` | a clip's frames as a filmstrip (`--frames`, `--zoom`, `--fps`) |
 | `npm run lab -- board` / `check` / `packages` | group scores by family, guard a change, split work into packages |
 
-The header of `studio/scripts/wc-lab.mjs` lists every option. Output goes to `out/` (git-ignored).
+The header of `lab/scripts/wc-lab.mjs` lists every option. Output goes to `out/` (git-ignored).
 
 ---
 
 ## 8. Folder map
 
 ```
-index.html            home page
-server.mjs            local server (loopback only, read-only, browser assets only)
+index.html            home page: create a character, try the sample, every character found
+server.mjs            local server (loopback only, browser assets only; its one write is lab-api.mjs)
+lab-api.mjs           POST /api/characters: the New character page makes a pack
 lab-config.mjs        finds packs and mounts (lab.config.json, LAB_PACKS)
-studio/               the engine
-  index.html          the studio            score.html   scores      anim.html   clips
-  cel.html            the cel material      inspect.html, bake.html  tools for figures scored with landmarks
+lab/                  the engine
+  index.html          the lab               score.html   scores      anim.html   clips
+  new.html            a new character       cel.html     the cel material
+  inspect.html, bake.html                   tools for figures scored with landmarks
   js/                 renderer, catalog, scoring, rig and clips, face params, pack API and loader
-  scripts/            command line, test runner
+  scripts/            command line, pack maker (pack-maker.mjs, png.mjs), test runner
 packs/                the lab's own packs: captain-kite/ and the pack format (README.md)
 examples/blob/        the guide's tutorial character
 docs/images/          the pictures in this README

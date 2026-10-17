@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "character-lab",
+  "owner": { "name": "Character Lab" },
+  "description": "Character Lab: characters drawn in code and scored against their reference pictures.",
+  "plugins": [
+    {
+      "name": "character-lab",
+      "source": "./",
+      "description": "Draw characters in code from your pictures, score each drawing against its picture, and animate them.",
+      "category": "design",
+      "tags": ["character", "drawing", "animation", "mcp"]
+    }
+  ]
+}
