@@ -41,6 +41,8 @@ Needs **Node.js 22.12+** and, for command-line scoring, **Google Chrome**. In Cl
   texture. Save a baseline, change the code, and compare per variant.
 - **Faces, rigs and clips**: face params (eyes, lids, gaze, brows, mouth, blush) as presets and sliders in the lab, a
   rig of parts, and clips such as a wave, shown as a filmstrip.
+- **Scenarios**: test a cast in context, in a small scene drawn by code with numeric params: scrub and sweep the
+  params, play the clips, see whether the feet meet the floor, and export a filmstrip (`lab/scenarios.html`).
 - **New character page**: drop in pictures, check the figure box it finds, and get a pack with a placeholder drawing
   and its first score (also `npm run new-pack`).
 - **A pack format** for your own characters, with a checker (`checkPack`), packs kept in any folder or private repo,
@@ -184,6 +186,21 @@ filmstrip.
 
 ![The wave clip as a filmstrip](docs/images/clip-wave.png)
 
+### Scenarios: the cast in a scene
+
+`lab/scenarios.html` (Scenarios in the navigation, http://localhost:8765/lab/scenarios.html) tests characters in
+context. A **scenario** is a small scene a pack draws in code (a backdrop and props from a few numeric params) with its
+cast placed in slots. Drag a param, or **sweep** it (min to max and back, eased), play the cast's clips, and the overlay
+shows each slot's floor, each figure's box and how far its soles float above (or sink below) the floor. **Filmstrip**
+exports frames of a sweep or of the clips as a PNG. The address keeps the state, so
+`npm run characterlab -- shot --url="/lab/scenarios.html?s=kite-rooftop&lift=60"` captures the same frame.
+
+Captain Kite's **Rooftop take-off** is the example: `wind` streams a flag and leans him into it, `lift` raises him off
+the roof as his shadow shrinks, so a sweep of `lift` shows at once whether his boots sit on the roof at 0. A pack adds
+its own with `CharacterLab.scenarios.register()` (`packs/README.md`).
+
+![The scenarios page: the rooftop take-off, mid lift](docs/images/scenarios.png)
+
 ---
 
 ## 3. Meet Captain Kite
@@ -211,6 +228,7 @@ How he's built (`packs/captain-kite/`):
   from the sheets by `tools/trace-sheets.py` (Python, numpy, scipy, Pillow), so you can remake it.
 - `kite-face.js` draws the eyes, brows, nose and mouth in code, so the face can change expression.
 - `captain-kite.js` holds the variants, the face presets, the rig and the clips, and registers the character.
+- `kite-rooftop.js` registers his scenario, the rooftop take-off (`lab/scenarios.html`).
 
 The sheets were generated for this project with OpenAI image generation through the Codex CLI. The whole pack, code and
 sheets, is CC0.
@@ -381,6 +399,7 @@ lab-api.mjs           POST /api/characters: the New character page makes a pack
 lab-config.mjs        finds packs and mounts (lab.config.json, LAB_PACKS)
 lab/                  the engine
   index.html          the lab               score.html   scores      anim.html   clips
+  scenarios.html      the cast in a scene drawn by code (scenarios packs register: js/lab-scenarios.js)
   new.html            a new character       cel.html     the cel material
   inspect.html, bake.html                   tools for figures scored with landmarks
   js/                 renderer, catalog, scoring, rig and clips, face params, pack API and loader

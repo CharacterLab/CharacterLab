@@ -35,7 +35,8 @@ log. With no packs at all the lab says "No character packs found".
 <id>/
   pack.json      { id, label, order, kind, requires, icon, icons, thumb, version, engine, license, private, description,
                    scripts: [...], sheetsBase }
-  <id>.js        the character's code; the last script ends with one CharacterLab.lab.registerCharacter({...}) call
+  <id>.js        the character's code; one script calls CharacterLab.lab.registerCharacter({...}) once
+                 (scripts after it may register scenarios: see Scenarios below)
   tests/         its own tests, run by `npm test` with the engine's (at least: checkPack)
 ```
 
@@ -68,6 +69,37 @@ CharacterLab.lab.registerCharacter({
   a variant with named regions (`regions`) can be measured part by part (`score.html?regions`, `inspect.html`).
 - `sheetsBase` in the script and in `pack.json` agree. Sheets are served, never copied into the pack.
 - Everything is checked before anything is registered (`../tests/packs.test.mjs` lists the rules).
+
+## Scenarios
+
+A scenario tests the cast in context on the lab's Scenarios page (`/lab/scenarios.html`): a small scene drawn by code
+from numeric params, with characters placed in it, to scrub and sweep the params, play the clips and catch motion or
+fit bugs (feet that float or sink, a figure too big for its place). A pack registers its scenarios from one of its own
+scripts, listed in `pack.json` after the script that registers its character; the engine draws no scene of its own
+(`../lab/js/lab-scenarios.js` documents every field). Captain Kite's `captain-kite/kite-rooftop.js` is an example.
+
+```js
+CharacterLab.scenarios.register({
+  id: "pip-garden", label: "Garden path", pack: "pip",   // id: unique among every pack's scenarios
+  world: [960, 600],                                      // the scene's size in its own units, y down
+  params: { wind: { label: "Wind", min: 0, max: 1, step: 0.01, value: 0.3 },   // value: the default
+            lift: { min: 0, max: 120, step: 1, value: 0, unit: "u" } },
+  slots: [{ id: "path", label: "Path", x: 480, y: 470, w: 200 }],   // where the cast stands; y is the floor
+  build: (p, ctx) => ({ ops: [...], over: [...] }),      // draw ops behind the cast, and in front of it (ctx: world, t)
+  draw: (g, p, view) => { … },                           // or 2D canvas drawing, under the cast (view: scale, ox, oy)
+  cast: (p, t) => [{ variant: "pip-front", slot: "path", dy: -p.lift, h: 280, clip: "pip-bob" }],   // or a list
+  notes: "What to look at.",
+});
+```
+
+- A cast member stands with its **soles** (the lowest point its variant draws at rest, under the middle of its crop) on
+  `x, y`, or on its slot plus `dx, dy`, scaled so its crop is `h` tall. `p` and `pose` set its face and rig, `clip`
+  plays a clip (`clipAt` holds one frame), `flip` mirrors it; `box` and `foot` override its box and feet (model units).
+- Its own backdrop (the leading fills covering its whole world) is left out, so the scene shows through
+  (`keepBackdrop: true` keeps it).
+- The page reports each member's **gap**: its soles above its slot's floor (0 standing, more floating, less sinking).
+  `CharacterLab.scenarios.frame(sc, params, t)` gives the same numbers in a test, without a GPU (`loadLab`).
+- Open one at `/lab/scenarios.html?s=<id>&<param>=<value>&t=<seconds>`; `sweep=<param>` starts a sweep.
 
 ## Renderer extensions and material packs
 
