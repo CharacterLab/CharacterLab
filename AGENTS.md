@@ -64,9 +64,9 @@ difference), `npm run characterlab -- film --clip=<id>` (filmstrip). The header 
 
 | Path | What |
 |------|------|
-| `lab/` | the engine: pages, `js/` (renderer `wc-gl.js`, pack API `lab-packs.js`, loader), `scripts/` (CLI `wc-lab.mjs`, pack maker) |
+| `lab/` | the engine: pages, `js/` (renderer `wc-gl.js`, pack API `lab-packs.js`, scenarios `lab-scenarios.js`, loader), `scripts/` (CLI `wc-lab.mjs`, pack maker) |
 | `packs/` | packs that ship with the lab; `packs/README.md` is the pack format |
-| `packs/captain-kite/` | the full example: several sheets, parts, expressions, poses, rig, clips |
+| `packs/captain-kite/` | the full example: several sheets, parts, expressions, poses, rig, clips, a scenario (`kite-rooftop.js`) |
 | `examples/blob/` | the smallest working pack |
 | `skills/` | the Agent Skills |
 | `mcp/` | the MCP server (`server.mjs`; tools in `tools.mjs`, the lab's server and CLI in `lab.mjs`) |
