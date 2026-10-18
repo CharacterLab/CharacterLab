@@ -11,7 +11,8 @@
   "scripts": [
     "kite-shapes.js",
     "kite-face.js",
-    "captain-kite.js"
+    "captain-kite.js",
+    "kite-rooftop.js"
   ],
   "sheetsBase": "/packs/captain-kite/sheets/"
 }

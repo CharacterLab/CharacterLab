@@ -21,7 +21,7 @@
 //   h (its figure's height, scene units), p (face params), pose (rig pose, added under its clip's), clip (a clip id),
 //   clipAt (seconds: hold that frame of the clip instead of following the page's time), flip (mirror it),
 //   box ([x, y, w, h] in the variant's model units: the figure's box; default its crop), foot ([x, y] in model units:
-//   the point set on (x, y); default the box's bottom centre), keepBackdrop (keep its own backdrop: by default the
+//   the point set on (x, y); default its soles at rest under the box's centre), keepBackdrop (keep its own backdrop: by default the
 //   leading fills that cover its whole world are left out, so the scene shows through) }.
 //
 //   register(def)              checks and adds a scenario (nothing is added unless the whole definition is valid)
@@ -30,11 +30,14 @@
 //   sweep(spec, u)             a param swept min > max > min as u goes 0 > 1, with a sine ease
 //   castOf(sc, p, t)           the cast at params p and time t, each member with its x, y resolved from its slot
 //   place(variant, member)     where a member's figure goes: { k (scene units per model unit), box, foot, M (model >
-//                              scene matrix [a, b, c, d, e, f]), rect ([x, y, w, h] in scene units) }
+//                              scene matrix [a, b, c, d, e, f]), rect ([x, y, w, h] in scene units) }; its feet are the
+//                              lowest point the variant draws at rest (its soles), under the middle of its box
+//   soleOf(ops)                the lowest point a list of ops draws (y, in their units), or null
 //   pose(variant, member, t)   the member's scene at time t: its clip sampled (or held), mixed over p and pose, the rig
 //                              flattened (wc-rig.js) and its backdrop left out: { ops, world }
 //   frame(sc, p, t)            everything a page draws: { world, ops, over, slots, cast: [{ member, variant, scene,
-//                              place, gap (feet above their slot's floor, scene units; null without a slot) }] }
+//                              place, soles (the lowest point it draws now, scene y), gap (its soles above its slot's
+//                              floor, scene units: 0 = standing on it, > 0 floating, < 0 sinking; null without a slot) }] }
 //   clipLength(sc, p)          the longest clip the cast follows (seconds; 0 when none does)
 // Needs js/wc-anim.js and js/wc-rig.js; castOf, pose and frame need js/wc-elements.js (the variants) once it is loaded.
 (function () {
@@ -162,8 +165,23 @@
     }
     return [0, 0, f[2], f[3]];
   }
+  // The lowest point the ops draw (their soles), in their own units; null when nothing has an outline.
+  function soleOf(ops) {
+    let y = -Infinity;
+    for (const op of ops) if (op.pts && op.kind !== "shadow" && op.kind !== "clip") for (const q of op.pts) if (q[1] > y) y = q[1];
+    return Number.isFinite(y) ? y : null;
+  }
+  const rest = new Map();   // variant id -> its soles at rest
+  function restSole(v) {
+    if (!rest.has(v.id)) {
+      const scene = v.build({});
+      rest.set(v.id, scene && Array.isArray(scene.ops) ? soleOf(backdropless(scene).ops) : null);
+    }
+    return rest.get(v.id);
+  }
   function place(v, m) {
-    const box = m.box || modelBox(v), foot = m.foot || [box[0] + box[2] / 2, box[1] + box[3]];
+    const box = m.box || modelBox(v), sole = m.foot ? null : restSole(v);
+    const foot = m.foot || [box[0] + box[2] / 2, sole != null && sole > box[1] ? sole : box[1] + box[3]];
     const k = m.h / box[3], sx = m.flip ? -k : k;
     const M = [sx, 0, 0, k, m.x - sx * foot[0], m.y - k * foot[1]];
     const x0 = M[0] * box[0] + M[4], x1 = M[0] * (box[0] + box[2]) + M[4];
@@ -194,9 +212,10 @@
   function frame(sc, p, t = 0) {
     const s = scenarioOf(sc), built = s.build ? s.build(p, { world: s.world, t }) || {} : {};
     const cast = castOf(s, p, t).map((member) => {
-      const v = variant(member.variant), at = place(v, member);
-      const gap = member.slotDef ? member.slotDef.y - member.y : null;
-      return { member, variant: v, scene: pose(v, member, t), place: at, gap };
+      const v = variant(member.variant), at = place(v, member), scene = pose(v, member, t), sole = soleOf(scene.ops);
+      const soles = sole == null ? null : at.M[3] * sole + at.M[5];
+      const gap = member.slotDef && soles != null ? member.slotDef.y - soles : null;
+      return { member, variant: v, scene, place: at, soles, gap };
     });
     return { world: s.world, ops: built.ops || [], over: built.over || [], slots: s.slots, cast };
   }
@@ -205,5 +224,5 @@
     return castOf(sc, p, 0).reduce((d, m) => (m.clip && m.clipAt == null && A.clips[m.clip] ? Math.max(d, A.clips[m.clip].dur) : d), 0);
   }
 
-  CharacterLab.scenarios = Object.freeze({ register, list, get, params, sweep, castOf, place, pose, frame, clipLength, modelBox, backdropless });
+  CharacterLab.scenarios = Object.freeze({ register, list, get, params, sweep, castOf, place, pose, frame, clipLength, modelBox, backdropless, soleOf });
 })();
