@@ -164,7 +164,8 @@ available from the command line: painting | code | difference.
 
 ![Painting, code drawing and their difference for the front figure](docs/images/compare-front.png)
 
-The difference panel shows where the drawing is off: white is a match, colour is a miss.
+The difference panel shows where the drawing is off: white is a match, colour is a miss. (In the lab's own Difference
+mode it is the other way round: black is a match.)
 
 ![The happy expression: painting, code, difference](docs/images/compare-happy.png)
 
@@ -200,7 +201,7 @@ even outline.
 | Expressions | neutral, happy, surprised, determined, sad, laughing |
 | Poses | walking, waving, sitting, looking up, hero landing, flying |
 
-That's 26 variants with a mean score of about 83, plus face presets, an outfit switch (`outfit: "civilian"`), a rig,
+That's 26 variants with a mean score of 81.4 (`npm run characterlab -- score`, SwiftShader, Chrome 155), plus face presets, an outfit switch (`outfit: "civilian"`), a rig,
 and two clips (`kite-wave`, `kite-blink`).
 
 ![The hero landing pose: painting, code, difference](docs/images/compare-landing.png)
@@ -294,7 +295,7 @@ Point the lab at the folder that holds your pack:
 
 ```bash
 LAB_PACKS=examples npm start                         # Blob appears in the lab
-LAB_PACKS=examples npm run characterlab -- score --part=blob  # blob-front  90.3
+LAB_PACKS=examples npm run characterlab -- score --part=blob  # blob-front  88.1 (SwiftShader, Chrome 155)
 LAB_PACKS=examples npm run characterlab -- sheet --v=blob-front --out=out/blob.png   # painting | code | difference
 ```
 

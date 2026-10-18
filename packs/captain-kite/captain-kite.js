@@ -201,9 +201,13 @@
         head: { rot: [[0, 0], [0.6, 2, "sine"], [1.2, 0, "sine"]] } } },
   ];
 
+  // anim.html's zooms (film --zoom=head): boxes [x, y, w, h] in the front figure's model units (sheet pixels from
+  // its crop's corner, x 0.5), the figure the filmstrips use by default
+  const lab = { filmZooms: { head: [67, 0, 86, 105], face: [85, 42, 55, 48], eyes: [87, 46, 48, 24], mouth: [99, 74, 27, 14] } };
+
   NS.build = build;
   NS.regions = regions;
   NS.SHEETS = SHEETS;
   CharacterLab.lab.registerCharacter({ id: ID, label: "Captain Kite", sheetsBase: "/packs/captain-kite/sheets/", sheets: SHEETS, parts, prefix: "kite-",
-    expressions, rig, clips });
+    expressions, rig, clips, lab });
 })();

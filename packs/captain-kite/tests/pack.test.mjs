@@ -85,7 +85,13 @@ test('the rig and the clips: a blink and the waving hand', async () => {
 });
 
 // Scores, measured with the lab's scorer (npm run characterlab -- score) when Chrome is there: each variant stays above the
-// floor set from its measured fidelity (about 3 points under it).
+// floor set from its measured fidelity (about 3 points under it). The floors were measured on macOS, where the
+// command line then rendered with Metal; it now renders with SwiftShader on every machine (GL_ARGS in
+// lab/scripts/wc-lab.mjs), so the test gives the same scores everywhere. The same drawing scores a little lower on
+// SwiftShader: on Chrome 155 on Linux, 8 of the 26 variants were under their Metal floor by 0.2 to 1.7 points (worst
+// kite-pose-sit 83.3 under 85) and the mean was 81.4 against the 82.7 the docs gave. RENDERER_TOLERANCE covers that gap
+// and nothing more; every floor below is still the one measured on the Mac.
+const RENDERER_TOLERANCE = 2;
 const FLOOR = {
   'kite-front': 85, 'kite-civilian': 83, 'kite-turn-front': 78, 'kite-turn-3q': 79, 'kite-turn-side': 77, 'kite-turn-back': 80,
   'kite-head': 77, 'kite-mask': 62, 'kite-torso': 85, 'kite-belt': 77, 'kite-cape': 87, 'kite-arm-r': 85, 'kite-arm-l': 85, 'kite-legs': 81,
@@ -98,12 +104,32 @@ test('every variant scores above its floor', { skip: !existsSync(CHROME) && 'no 
   const rows = [];
   for (const part of ['captain-kite', 'kite-parts', 'kite-expressions', 'kite-poses']) {
     const save = join(dir, `${part}.json`);
-    const r = spawnSync(process.execPath, ['lab/scripts/wc-lab.mjs', 'score', `--part=${part}`, `--save=${save}`], { cwd: LAB_DIR, encoding: 'utf8' });
+    const env = { ...process.env }; delete env.LAB_GL;   // always the shared renderer, never LAB_GL=native
+    const r = spawnSync(process.execPath, ['lab/scripts/wc-lab.mjs', 'score', `--part=${part}`, `--save=${save}`], { cwd: LAB_DIR, encoding: 'utf8', env });
     assert.equal(r.status, 0, r.stderr);
     rows.push(...JSON.parse(await readFile(save, 'utf8')));
   }
-  for (const [id, floor] of Object.entries(FLOOR)) {
-    const row = rows.find((x) => x.id === id);
-    assert.ok(row && row.fidelity >= floor, `${id}: ${row && row.fidelity} under ${floor}`);
-  }
+  // every variant is checked, and every miss is listed (not only the first)
+  const misses = Object.entries(FLOOR).map(([id, floor]) => [id, floor, rows.find((x) => x.id === id)])
+    .filter(([, floor, row]) => !(row && row.fidelity >= floor - RENDERER_TOLERANCE))
+    .map(([id, floor, row]) => `${id}: ${row ? row.fidelity : 'not scored'} under ${floor} - ${RENDERER_TOLERANCE}`);
+  assert.deepEqual(misses, []);
+});
+
+// film --zoom=<name>: the pack names its zooms (lab.filmZooms), the filmstrip draws them, and a name it does not know is
+// a plain error (it used to size the strip to 0 x 0 and crash in drawImage).
+test('the pack names its film zooms: head, face, eyes, mouth', async () => {
+  const CharacterLab = await lab(), z = CharacterLab.lab.character('captain-kite').lab.filmZooms;
+  for (const name of ['head', 'face', 'eyes', 'mouth']) assert.ok(z[name] && z[name][2] > 0 && z[name][3] > 0, name);
+});
+test('film --zoom=head draws the head, and an unknown zoom says so', { skip: !existsSync(CHROME) && 'no Chrome to render with', timeout: 120000 }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'kite-film-')), out = join(dir, 'head.png');
+  const film = (...a) => spawnSync(process.execPath, ['lab/scripts/wc-lab.mjs', 'film', '--clip=kite-blink', '--frames=4', ...a], { cwd: LAB_DIR, encoding: 'utf8' });
+  const ok = film('--zoom=head', `--out=${out}`);
+  assert.equal(ok.status, 0, ok.stderr);
+  const png = await readFile(out);
+  assert.ok(png.readUInt32BE(16) > 200 && png.readUInt32BE(20) > 200, `a ${png.readUInt32BE(16)} x ${png.readUInt32BE(20)} filmstrip`);
+  const bad = film('--zoom=nose', `--out=${join(dir, 'nose.png')}`);
+  assert.equal(bad.status, 1);
+  assert.match(bad.stderr, /unknown zoom "nose".*head, face, eyes, mouth/);
 });

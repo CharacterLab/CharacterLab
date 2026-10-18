@@ -1,5 +1,5 @@
-// Character Lab from the command line: drives the lab/ pages in headless Chrome (real GPU, same renderer
-// and scorer as the lab) through the lab's own server (server.mjs, on a free port): the same packs
+// Character Lab from the command line: drives the lab/ pages in headless Chrome (the lab's own renderer
+// and scorer, on SwiftShader: see GL_ARGS) through the lab's own server (server.mjs, on a free port): the same packs
 // (lab.config.json, LAB_PACKS) and mounts as `npm start`.
 // Run from the lab's folder (`npm run characterlab -- <args>` is the same as `node lab/scripts/wc-lab.mjs <args>`):
 //   npm run characterlab -- score                       every variant
@@ -34,9 +34,18 @@ import { boardLines, compare, families, packageStatus } from './lab-board.mjs';
 const LAB = resolve(dirname(fileURLToPath(import.meta.url)), '../..');   // the lab's folder
 const LAB_PATH = '/lab/';
 const MAC = process.platform === 'darwin';
-// macOS: Chrome + Metal. Linux (the box): /usr/bin/google-chrome + SwiftShader software GL. CHROME= overrides the path.
+// Chrome: /Applications/Google Chrome.app on macOS, /usr/bin/google-chrome elsewhere. CHROME= overrides the path.
 const CHROME = MAC ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : '/usr/bin/google-chrome';
-const GL_ARGS = MAC ? ['--use-angle=metal', '--enable-gpu'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'];
+// One renderer on every machine: SwiftShader (Chrome's software GL), with the 2D canvas, colour profile and pixel ratio
+// pinned too. Scores depend on the renderer: the WebGL rasterizer and the 2D canvas that shrinks the 3x render to the
+// sheet's size differ between Metal, GPU drivers and software, so a score (and the floors in the pack tests) is only
+// comparable between machines on the same renderer. LAB_GL=native uses the machine's GPU instead (Metal on macOS):
+// faster, but its scores are not comparable with anyone else's.
+export const NATIVE_GL = process.env.LAB_GL === 'native';
+export const GL_ARGS = NATIVE_GL
+  ? (MAC ? ['--use-angle=metal', '--enable-gpu'] : [])
+  : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--force-color-profile=srgb', '--force-device-scale-factor=1'];
+const SANDBOX_ARGS = MAC ? [] : ['--no-sandbox'];
 const labFile = (p) => resolve(LAB, p);
 
 // --- pure helpers (tested) ---
@@ -84,7 +93,7 @@ export function report(rows, base) {
 // Headless Chrome with WebGL, as the lab's commands and its page tests use it (CHROME= overrides the path).
 export const chromePath = () => process.env.CHROME || CHROME;
 export const launchChrome = () => puppeteer.launch({ executablePath: chromePath(), headless: true,
-  args: ['--ignore-gpu-blocklist', '--enable-webgl', ...GL_ARGS, '--disable-renderer-backgrounding', '--disable-background-timer-throttling'] });
+  args: ['--ignore-gpu-blocklist', '--enable-webgl', ...GL_ARGS, ...SANDBOX_ARGS, '--disable-renderer-backgrounding', '--disable-background-timer-throttling'] });
 async function withLab(fn) {
   const server = createLabServer({ config: readConfig() });
   server.listen(0, '127.0.0.1'); await once(server, 'listening');

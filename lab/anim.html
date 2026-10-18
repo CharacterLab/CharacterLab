@@ -59,7 +59,10 @@
     // pixels, which this page does not load
     if (vv.kind === "mapped" && !(vv.fit && typeof vv.fit === "object")) throw new Error(vv.id + ": its fit needs the sheet; use the front or an expression head");
     const fit = vv.kind === "mapped" ? vv.fit : null;
-    const z = zq ? (ZOOM[zq] !== undefined ? ZOOM[zq] : zq.split(",").map(Number)) : null;
+    // a zoom is a name the pack gives (lab.filmZooms) or a box x,y,w,h; anything else would size the strip to 0 x 0
+    const z = zq ? (Object.hasOwn(ZOOM, zq) ? ZOOM[zq] : zq.split(",").map(Number)) : null;
+    if (z && !(z.length === 4 && z.every(Number.isFinite) && z[2] > 0 && z[3] > 0))
+      throw new Error(`unknown zoom "${zq}": use x,y,w,h (model units) or one of ${Object.keys(ZOOM).join(", ")}`);
     const box = z || [0, 0, world[0], world[1]];
     const k = H / box[3], W = Math.round(box[2] * k), labelH = labels ? 18 : 0, gap = labels ? 4 : 0, left = labels ? 140 : 0;
     const cols = cols0 || N, rowsPer = Math.ceil(N / cols);
