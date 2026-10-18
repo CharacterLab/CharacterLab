@@ -10,7 +10,7 @@ import vm from 'node:vm';
 
 const ENGINE_JS = new URL('../js/', import.meta.url);
 // The engine scripts every page loads before its packs, and the catalog that reads what they registered.
-export const BEFORE = ['lab-geom.js', 'wc-gl.js', 'wc-compare.js', 'wc-parts.js', 'wc-rig.js', 'wc-anim.js', 'wc-expressions.js', 'lab-packs.js'];
+export const BEFORE = ['lab-geom.js', 'wc-gl.js', 'wc-compare.js', 'wc-parts.js', 'wc-rig.js', 'wc-anim.js', 'wc-expressions.js', 'lab-packs.js', 'lab-scenarios.js'];
 export const AFTER = ['wc-elements.js'];
 const isGL = (s) => s.endsWith('-gl.js');
 
