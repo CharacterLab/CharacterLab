@@ -10,7 +10,7 @@ import { checkPack } from '../lab/scripts/lab-vm.mjs';
 // check every pack's own tests run (lab/scripts/lab-vm.mjs checkPack). The packs themselves are tested in their
 // folders (packs/<id>/tests/); nothing here needs one.
 const LAB = new URL('../', import.meta.url);
-const PAGES = ['index.html', 'score.html', 'inspect.html', 'anim.html', 'bake.html'];
+const PAGES = ['index.html', 'score.html', 'inspect.html', 'anim.html', 'bake.html', 'scenarios.html'];
 const plain = (x) => JSON.parse(JSON.stringify(x));
 
 // The pack API in a fresh page-like context; `run` adds a script to the same context.
@@ -30,6 +30,7 @@ test('every page loads the packs through the loader, after the pack API and befo
     const srcs = [...html.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]);
     const at = (s) => srcs.indexOf(s);
     assert.ok(at('js/lab-packs.js') >= 0 && at('js/lab-loader.js') > at('js/lab-packs.js') && at('js/wc-elements.js') > at('js/lab-loader.js'), `${name}: lab-packs.js, lab-loader.js, wc-elements.js`);
+    assert.ok(at('js/lab-scenarios.js') > at('js/lab-packs.js') && at('js/lab-scenarios.js') < at('js/lab-loader.js'), `${name}: lab-scenarios.js before the packs`);
     assert.ok(!srcs.some((s) => s.includes('packs/')), `${name}: no pack script listed by hand`);
   }
 });

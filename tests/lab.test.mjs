@@ -57,7 +57,7 @@ test('the home page leads to the lab and its tools', async t => {
   assert.equal(res.status, 200);
   assert.match(res.headers.get('content-type'), /text\/html/);
   const html = await res.text();
-  for (const href of ['lab/', 'lab/new.html', 'lab/?char=captain-kite', 'lab/score.html', 'lab/anim.html', 'lab/cel.html']) assert.ok(html.includes(`href="${href}"`), `home links to ${href}`);
+  for (const href of ['lab/', 'lab/new.html', 'lab/?char=captain-kite', 'lab/score.html', 'lab/anim.html', 'lab/scenarios.html', 'lab/cel.html']) assert.ok(html.includes(`href="${href}"`), `home links to ${href}`);
   const lab = await (await fetch(`${base}/lab/`)).text();
   assert.ok(lab.includes('href="new.html"'), 'the lab has a New character button');
 });
@@ -65,7 +65,7 @@ test('the home page leads to the lab and its tools', async t => {
 test('the lab pages and a pack\'s page are served as they are', async t => {
   const {server, base} = await startLab();
   t.after(() => server.close());
-  for (const path of ['/lab/', '/lab/new.html', '/lab/score.html', '/lab/inspect.html', '/lab/bake.html', '/lab/anim.html', '/lab/cel.html', '/packs/pip/tool.html']) {
+  for (const path of ['/lab/', '/lab/new.html', '/lab/score.html', '/lab/inspect.html', '/lab/bake.html', '/lab/anim.html', '/lab/scenarios.html', '/lab/cel.html', '/packs/pip/tool.html']) {
     const res = await fetch(`${base}${path}`);
     assert.equal(res.status, 200, path);
     assert.match(res.headers.get('content-type'), /text\/html/, path);

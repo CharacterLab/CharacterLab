@@ -133,3 +133,49 @@ test('film --zoom=head draws the head, and an unknown zoom says so', { skip: !ex
   assert.equal(bad.status, 1);
   assert.match(bad.stderr, /unknown zoom "nose".*head, face, eyes, mouth/);
 });
+
+// The rooftop take-off scenario (kite-rooftop.js, lab/scenarios.html): its boots stay on the roof at lift 0 for any
+// wind, lift raises them by exactly that much, the shadow shrinks and fades, and the wind moves the flag.
+test('the rooftop scenario: boots on the roof at any wind, lift raises them, the shadow shrinks, the flag streams', async () => {
+  const CharacterLab = await lab(), S = CharacterLab.scenarios, sc = S.get('kite-rooftop');
+  assert.ok(sc && sc.pack === 'captain-kite', 'registered by the pack');
+  assert.deepEqual(Object.keys(sc.params), ['wind', 'lift']);
+  for (const wind of [0, 0.25, 0.5, 0.75, 1]) {
+    const f = S.frame(sc, S.params(sc, { wind }), 0.3), [kite] = f.cast;
+    assert.equal(kite.variant.id, 'kite-front');
+    assert.ok(Math.abs(kite.gap) < 0.5, `wind ${wind}: soles ${kite.gap} from the roof`);
+    assert.ok(f.ops.every((op) => !op.pts || op.pts.every(([x, y]) => Number.isFinite(x) && Number.isFinite(y))), `wind ${wind}: finite ops`);
+  }
+  const at = (lift) => S.frame(sc, S.params(sc, { lift }), 0);
+  assert.ok(Math.abs(at(80).cast[0].gap - 80) < 0.5, 'lift 80: 80 units above the roof');
+  const shadow = (f) => f.ops.find((op) => op.kind === 'shadow');
+  const width = (op) => Math.max(...op.pts.map((q) => q[0])) - Math.min(...op.pts.map((q) => q[0]));
+  assert.ok(width(shadow(at(140))) < 0.6 * width(shadow(at(0))) && shadow(at(140)).amt < shadow(at(0)).amt, 'the shadow shrinks and fades');
+  const cloth = (wind) => JSON.stringify(S.frame(sc, S.params(sc, { wind }), 0).ops.filter((op) => op.mat && op.mat.ramp && op.mat.ramp[2] === '#0ca09c'));
+  assert.notEqual(cloth(0), cloth(1), 'the wind moves the flag');
+});
+
+test('the scenarios page draws the rooftop with Kite on the roof and exports a filmstrip', { skip: !existsSync(CHROME) && 'no Chrome to render with', timeout: 120000 }, async (t) => {
+  const { createLabServer } = await import('../../../server.mjs');
+  const { launchChrome } = await import('../../../lab/scripts/wc-lab.mjs');
+  const { once } = await import('node:events');
+  const server = createLabServer({ config: { packDirs: [fileURLToPath(new URL('../../', import.meta.url))], mounts: {}, newPacksDir: tmpdir() } });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const browser = await launchChrome();
+  t.after(async () => { await browser.close(); server.close(); });
+  const page = await browser.newPage(), errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`http://127.0.0.1:${server.address().port}/lab/scenarios.html?s=kite-rooftop&wind=0.8`, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => window.__labReady, { timeout: 60000 });
+  assert.equal(await page.$eval('#name', (el) => el.textContent), 'Rooftop take-off');
+  assert.equal(await page.$eval('#msg', (el) => el.hidden), true, 'no error shown');
+  assert.match(await page.$eval('#readout', (el) => el.textContent), /kite-front · kite-blink · Roof: soles on the floor/);
+  const png = Buffer.from((await page.evaluate(() => window.__scenarios.strip({ src: 'sweep:lift', n: 4 }))).split(',')[1], 'base64');
+  assert.ok(png.readUInt32BE(16) > 1000 && png.readUInt32BE(20) > 200, `a ${png.readUInt32BE(16)} x ${png.readUInt32BE(20)} filmstrip`);
+  // the canvas shows the scene: sky up top, the roof's face low down
+  const px = await page.$eval('#view', (c) => { const g = c.getContext('2d'); const at = (x, y) => [...g.getImageData(x * c.width, y * c.height, 1, 1).data]; return [at(0.05, 0.05), at(0.05, 0.95)]; });
+  assert.ok(px[0][2] > px[0][0] + 40, `a blue sky: ${px[0]}`);
+  assert.ok(px[1][2] < 160, `the roof's face: ${px[1]}`);
+  assert.deepEqual(errors, []);
+});
