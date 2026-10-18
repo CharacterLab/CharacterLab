@@ -26,7 +26,7 @@
     for (const [cx, cy, s] of [[210, 120, 1], [600, 205, 0.7]]) {
       for (const [dx, dy, rx, ry] of [[-48, 8, 34, 22], [-10, -8, 42, 32], [34, 2, 36, 26], [64, 12, 24, 16]])
         ops.push(fill(ellipse(cx + dx * s, cy + dy * s, rx * s, ry * s), cel("#ffffff", "#d8ecf6", { shadow: 7 * s, light: -2.2 })));
-      ops.push(fill(rect(cx - 76 * s, cy + 12 * s, cx + 84 * s, cy + 26 * s), cel("#ffffff")));
+      ops.push(fill(ellipse(cx + 6 * s, cy + 16 * s, 70 * s, 11 * s), cel("#ffffff")));
     }
     // two rows of towers: the far one paler
     const towers = (row, colour, base) => row.forEach(([x, w, h]) => ops.push(fill(rect(x, base - h, x + w, 620), cel(colour))));
@@ -84,10 +84,17 @@
     const ops = [fill([[kx, ky], [980, 470], [980, 471.4], [kx + 1.4, ky]], cel("#3c4a56"))];   // its string, down to the street
     ops.push(fill([[0, -36], [24, -4], [0, 36], [-24, -4]].map(rot), inked("#fb7413", "#c14e0c", { shadow: 8 })));
     ops.push(fill([[0, -36], [24, -4], [0, -4]].map(rot), inked("#ffd23f", "#e0a51c", { lineW: 0, shadow: 0 })));
-    for (let i = 1; i <= 4; i++) {
-      const [bx, by] = rot([-10 * i - 4 * Math.sin(t * 4 + i) * (1.2 - w), 36 + 18 * i]);
-      ops.push(fill([[bx - 6, by - 4], [bx + 6, by + 4], [bx + 6, by - 4], [bx - 6, by + 4]], inked(i % 2 ? "#0ca09c" : "#ffffff", null, { lineW: 1.2, shadow: 0 })));
+    // the tail: a thin line through four bows that swing more when the wind is light
+    const bows = Array.from({ length: 4 }, (_, i) => rot([-10 * (i + 1) - 5 * Math.sin(t * 4 + i) * (1.2 - w), 36 + 20 * (i + 1)]));
+    const tail = [rot([0, 34]), ...bows];
+    for (let i = 1; i < tail.length; i++) {
+      const [a, b] = [tail[i - 1], tail[i]];
+      ops.push(fill([a, b, [b[0] + 1.2, b[1]], [a[0] + 1.2, a[1]]], cel("#3c4a56")));
     }
+    bows.forEach(([bx, by], i) => {
+      ops.push(fill([[bx - 9, by - 6], [bx, by], [bx - 9, by + 6]], inked(i % 2 ? "#ffffff" : "#0ca09c", null, { lineW: 1.2, shadow: 0 })));
+      ops.push(fill([[bx + 9, by - 6], [bx, by], [bx + 9, by + 6]], inked(i % 2 ? "#ffffff" : "#0ca09c", null, { lineW: 1.2, shadow: 0 })));
+    });
     return ops;
   }
 
